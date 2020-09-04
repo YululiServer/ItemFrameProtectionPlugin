@@ -1,0 +1,15 @@
+#
+# ItemFrameProtectionPlugin
+#                              by ちのなみ (https://github.com/kanasaki15)
+# 自分で作っといてプラグイン名なげえ・・・
+#
+
+logPrint: false # 「true」にすると無駄にログを吐き出すモード
+errorPrint: true # 「false」にするとエラーが出ても見てみぬする
+
+useMySQL: false # MySQL使うなら「true」。falseだったら勝手にSQLite使う。
+MySQLServer: 'localhost' # サーバー名
+MySQLUsername: 'user' # ユーザー名
+MySQLPassword: 'pass' # パスワード
+MySQLDatabase: 'data' # データベース名
+MySQLOption: '?allowPublicKeyRetrieval=true&useSSL=false' # オプション (MySQL 5.6以降にはデフォで書かれているのが必須らしい。)
