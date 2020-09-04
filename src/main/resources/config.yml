@@ -4,8 +4,8 @@
 # 自分で作っといてプラグイン名なげえ・・・
 #
 
-logPrint: false # 「true」にすると無駄にログを吐き出すモード
-errorPrint: true # 「false」にするとエラーが出ても見てみぬする
+logPrint: false # 「true」にすると無駄にログを吐き出すモード (保護したとき、保護した人以外が中身を取り出したとき、削除したとき、破壊したとき)
+errorPrint: true # 「false」にするとプラグイン自体にエラーが出ても見てみぬする (下記のMySQLの設定がおかしいとかバグったとか)
 
 useMySQL: false # MySQL使うなら「true」。falseだったら勝手にSQLite使う。
 MySQLServer: 'localhost' # サーバー名
