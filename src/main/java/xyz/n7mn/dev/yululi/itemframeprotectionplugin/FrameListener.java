@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.api.FrameData;
@@ -44,7 +45,7 @@ public class FrameListener implements Listener {
             FrameData data = new FrameData(plugin).getData(con, e.getRightClicked().getLocation());
             if (e.getPlayer().isSneaking()){
                 dataAPI.setData(con, e.getPlayer().getUniqueId(), e.getRightClicked().getLocation());
-                if (data != null){
+                if (data == null){
                     e.getPlayer().sendMessage(ChatColor.GREEN + "額縁を保護しました。解除するにはもう一度スニーク状態で右クリックしてください。");
                 } else {
                     e.getPlayer().sendMessage(ChatColor.GREEN + "額縁を保護解除しました。もう一度設定するにはもう一度スニーク状態で右クリックしてください。");
@@ -97,64 +98,7 @@ public class FrameListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void BlockDamageEvent (BlockDamageEvent e){
-        Location location = e.getBlock().getLocation();
-
-        if (!e.getPlayer().hasPermission("ifp.op")){
-            boolean b = false;
-            for (int x = 0; x < 1; x++){
-                for (int y = 0; y < 1; y++){
-                    for (int z = 0; z < 1; z++){
-                        FrameData data = new FrameData(plugin).getData(con, location.getBlockX() + x, location.getBlockY() + y, location.getBlockZ() + z);
-                        if (data != null){
-                            b = true;
-                            break;
-                        }
-                    }
-                    if (b){
-                        break;
-                    }
-                }
-                if (b){
-                    break;
-                }
-            }
-
-            if (b){
-                e.setCancelled(b);
-            }
-        }
+    public void HangingPlaceEvent (HangingPlaceEvent e){
+        e.getPlayer().sendMessage(ChatColor.GOLD + "[IFP] 左Shiftを押しながら右クリックすると額縁を保護することができます。");
     }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void BlockBreakEvent (BlockBreakEvent e){
-        Location location = e.getBlock().getLocation();
-
-        if (!e.getPlayer().hasPermission("ifp.op")){
-            boolean b = false;
-            for (int x = 0; x < 1; x++){
-                for (int y = 0; y < 1; y++){
-                    for (int z = 0; z < 1; z++){
-                        FrameData data = new FrameData(plugin).getData(con, location.getBlockX() + x, location.getBlockY() + y, location.getBlockZ() + z);
-                        if (data != null){
-                            b = true;
-                            break;
-                        }
-                    }
-                    if (b){
-                        break;
-                    }
-                }
-                if (b){
-                    break;
-                }
-            }
-
-            if (b){
-                e.setCancelled(b);
-            }
-        }
-
-    }
-
 }
