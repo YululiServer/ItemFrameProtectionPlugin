@@ -3,9 +3,9 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.io.File;
+import java.io.IOException;
+import java.sql.*;
 
 public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
@@ -31,6 +31,52 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
         if (getConfig().getBoolean("useMySQL")){
             try {
                 con = DriverManager.getConnection("jdbc:mysql://" + MySQLServer + "/" + MySQLDatabase + MySQLOption, MySQLUsername, MySQLPassword);
+
+                PreparedStatement statement = con.prepareStatement("SHOW TABLES LIKE 'IFPTable';");
+                ResultSet resultSet = statement.executeQuery();
+                if (!resultSet.next()){
+                    PreparedStatement statement1 = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                            "  `CreateUser` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                            "  `X` int NOT NULL,\n" +
+                            "  `Y` int NOT NULL,\n" +
+                            "  `Z` int NOT NULL\n" +
+                            ")");
+                    statement1.execute();
+                }
+
+
+            } catch (SQLException e){
+                if (getConfig().getBoolean("errorPrint")){
+                    getLogger().info(ChatColor.RED + "エラーが発生しました。");
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            try {
+                String pass = "./" + getDataFolder().getPath() + "/data.db";
+                if (System.getProperty("os.name").toLowerCase().startsWith("windows")){
+                    pass = pass.replaceAll("/", "\\\\");
+                }
+
+                boolean cre = false;
+                if (!new File(pass).exists()){
+                    try {
+                        new File(pass).createNewFile();
+                        cre = true;
+                    } catch (IOException e) {
+                        // e.printStackTrace();
+                    }
+                }
+
+
+                con = DriverManager.getConnection("jdbc:sqlite:"+pass);
+                con.setAutoCommit(true);
+
+                if (cre){
+                    PreparedStatement statement = con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), X INTEGER, Y INTEGER, Z INTEGER); ");
+                    statement.execute();
+                }
+
             } catch (SQLException e){
                 if (getConfig().getBoolean("errorPrint")){
                     getLogger().info(ChatColor.RED + "エラーが発生しました。");
