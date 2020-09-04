@@ -8,6 +8,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
 
+        saveDefaultConfig();
         getServer().getPluginManager().registerEvents(new FrameListener(), this);
     }
 

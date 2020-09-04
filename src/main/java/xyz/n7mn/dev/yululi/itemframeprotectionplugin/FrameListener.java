@@ -53,11 +53,14 @@ public class FrameListener implements Listener {
                             try {
                                 con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("MySQLServer") + "/" + plugin.getConfig().getString("MySQLDatabase") + plugin.getConfig().getString("MySQLOption"), plugin.getConfig().getString("MySQLUsername"), plugin.getConfig().getString("MySQLPassword"));
                                 PreparedStatement st1 = con.prepareStatement("SHOW TABLES LIKE 'IFPTable';");
-                                if (!st1.execute()){
-                                    PreparedStatement statement = con.prepareStatement("CREATE TABLE `IFPTable` ( `ID` INT NOT NULL , `CreateUser` VARCHAR(36) NOT NULL , `x` INT NOT NULL , `y` INT NOT NULL , `z` INT NOT NULL , `Active` BOOLEAN NOT NULL , PRIMARY KEY (`ID`))");
-                                    if (!statement.execute()){
+
+                                if (!st1.executeQuery().next()){
+                                    try {
+                                        PreparedStatement statement = con.prepareStatement("CREATE TABLE `IFPTable` ( `ID` INT NOT NULL , `CreateUser` VARCHAR(36) NOT NULL , `x` INT NOT NULL , `y` INT NOT NULL , `z` INT NOT NULL , `Active` BOOLEAN NOT NULL , PRIMARY KEY (`ID`))");
+                                        statement.execute();
+                                    } catch (SQLException xx){
                                         if (plugin.getConfig().getBoolean("errorPrint")){
-                                            plugin.getLogger().info(ChatColor.RED + "MySQLの権限が足りないみたい。。。");
+                                            plugin.getLogger().info(ChatColor.RED + "MySQLの権限が足りないみたい。。。" + xx.getMessage());
                                         }
                                     }
                                 }
@@ -69,29 +72,34 @@ public class FrameListener implements Listener {
 
                                 ResultSet set = st2.executeQuery();
                                 if (!set.next()){
-                                    PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable");
-                                    ResultSet set1 = statement.executeQuery();
-                                    PreparedStatement st3 = con.prepareStatement("INSERT INTO `IFPTable` (`ID`, `CreateUser`, `x`, `y`, `z`, `Active`) VALUES (?, ?, ?, ?, ?, ?) ");
-                                    if (set1.next()){
-                                        int i = set1.getInt("COUNT(*)");
-                                        st3.setInt(1, i);
-                                    } else {
-                                        st3.setInt(1, 1);
-                                    }
-                                    st3.setString(2, e.getPlayer().getUniqueId().toString());
-                                    st3.setInt(3, e.getRightClicked().getLocation().getBlockX());
-                                    st3.setInt(4, e.getRightClicked().getLocation().getBlockY());
-                                    st3.setInt(5, e.getRightClicked().getLocation().getBlockZ());
-                                    st3.setBoolean(6, true);
-                                    if (!st3.execute() && plugin.getConfig().getBoolean("errorPrint")){
-                                        plugin.getLogger().info(ChatColor.RED + "保護データを追加できなかったようです？");
+                                    try {
+                                        PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable");
+                                        ResultSet set1 = statement.executeQuery();
+                                        PreparedStatement st3 = con.prepareStatement("INSERT INTO `IFPTable` (`ID`, `CreateUser`, `x`, `y`, `z`, `Active`) VALUES (?, ?, ?, ?, ?, ?) ");
+                                        if (set1.next()){
+                                            int i = set1.getInt("COUNT(*)") + 1;
+                                            st3.setInt(1, i);
+                                        } else {
+                                            st3.setInt(1, 1);
+                                        }
+                                        st3.setString(2, e.getPlayer().getUniqueId().toString());
+                                        st3.setInt(3, e.getRightClicked().getLocation().getBlockX());
+                                        st3.setInt(4, e.getRightClicked().getLocation().getBlockY());
+                                        st3.setInt(5, e.getRightClicked().getLocation().getBlockZ());
+                                        st3.setBoolean(6, true);
+                                        st3.execute();
+                                    } catch (SQLException exx){
+                                        if (plugin.getConfig().getBoolean("errorPrint")){
+                                            plugin.getLogger().info(ChatColor.RED + "保護データを追加できなかったようです？");
+                                        }
                                     }
                                 }
+                                con.close();
                             } catch (SQLException sql){
                                 if (plugin.getConfig().getBoolean("errorPrint")){
+                                    sql.printStackTrace();
                                     plugin.getLogger().info(ChatColor.RED + "MySQLサーバー関係でエラーが発生しました。 " + sql.getMessage());
                                 }
-
                             }
                         }
                     }
