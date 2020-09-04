@@ -3,6 +3,7 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -99,6 +100,8 @@ public class FrameListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void HangingPlaceEvent (HangingPlaceEvent e){
-        e.getPlayer().sendMessage(ChatColor.GOLD + "[IFP] 左Shiftを押しながら右クリックすると額縁を保護することができます。");
+        if (e.getBlock().getType() == Material.ITEM_FRAME){
+            e.getPlayer().sendMessage(ChatColor.GOLD + "[IFP] 左Shiftを押しながら右クリックすると額縁を保護することができます。");
+        }
     }
 }
