@@ -60,6 +60,7 @@ public class FrameListener implements Listener {
                 }
             }
         }
+
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
@@ -123,7 +124,6 @@ public class FrameListener implements Listener {
                 e.setCancelled(b);
             }
         }
-
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

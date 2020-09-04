@@ -39,7 +39,10 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             }
         }
 
-        getServer().getPluginManager().registerEvents(new FrameListener(this, con), this);
+        if (con != null){
+            getServer().getPluginManager().registerEvents(new FrameListener(this, con), this);
+        }
+
     }
 
     @Override
