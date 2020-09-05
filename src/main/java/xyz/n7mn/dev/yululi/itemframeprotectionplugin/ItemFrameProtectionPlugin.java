@@ -35,13 +35,19 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 PreparedStatement statement = con.prepareStatement("SHOW TABLES LIKE 'IFPTable';");
                 ResultSet resultSet = statement.executeQuery();
                 if (!resultSet.next()){
-                    PreparedStatement statement1 = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                    con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
                             "  `CreateUser` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
-                            "  `X` int NOT NULL,\n" +
-                            "  `Y` int NOT NULL,\n" +
-                            "  `Z` int NOT NULL\n" +
-                            ")");
-                    statement1.execute();
+                            "  `ItemFrame` varchar(36) NOT NULL\n" +
+                            ")").execute();
+                } else {
+                    PreparedStatement statement1 = con.prepareStatement("SELECT ItemFrame FROM IFPTable");
+                    if (!statement1.execute()){
+                        con.prepareStatement("RENAME TABLE IFPTable TO IFPTable_old;").execute();
+                        con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                                "  `CreateUser` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemFrame` varchar(36) NOT NULL\n" +
+                                ")").execute();
+                    }
                 }
 
 
@@ -73,8 +79,12 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 con.setAutoCommit(true);
 
                 if (cre){
-                    PreparedStatement statement = con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), X INTEGER, Y INTEGER, Z INTEGER); ");
-                    statement.execute();
+                    con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), ItemFrame VARCHAR(36)); ").execute();
+                } else {
+                    if (!con.prepareStatement("SELECT ItemFlame FROM IFPTable").executeQuery().next()){
+                        con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old; ").execute();
+                        con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), ItemFrame VARCHAR(36)); ").execute();
+                    }
                 }
 
             } catch (SQLException e){

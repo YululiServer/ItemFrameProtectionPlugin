@@ -12,9 +12,7 @@ import java.util.UUID;
 public class FrameData {
 
     private UUID CreateUser;
-    private int BlockX;
-    private int BlockY;
-    private int BlockZ;
+    private UUID ItemFrameUUID;
 
     private Plugin plugin = null;
 
@@ -22,38 +20,27 @@ public class FrameData {
         this.plugin = plugin;
     }
 
-    public FrameData(UUID createUser, int blockX, int blockY, int blockZ){
+
+    public FrameData(UUID createUser, UUID itemFrameUUID){
         this.CreateUser = createUser;
-        this.BlockX = blockX;
-        this.BlockY = blockY;
-        this.BlockZ = blockZ;
+        this.ItemFrameUUID = itemFrameUUID;
     }
 
     public UUID getCreateUser() {
         return CreateUser;
     }
 
-    public int getBlockX() {
-        return BlockX;
+    public UUID getItemFrameUUID(){
+        return ItemFrameUUID;
     }
 
-    public int getBlockY() {
-        return BlockY;
-    }
-
-    public int getBlockZ() {
-        return BlockZ;
-    }
-
-    public FrameData getData(Connection con, int x, int y, int z){
+    public FrameData getData(Connection con, UUID itemFrameUUID){
         try {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable WHERE X = ? AND Y = ? AND Z = ?");
-            statement.setInt(1, x);
-            statement.setInt(2, y);
-            statement.setInt(3, z);
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable WHERE ItemFrame = ?");
+            statement.setString(1, itemFrameUUID.toString());
             ResultSet set = statement.executeQuery();
             if (set.next()){
-                return new FrameData(UUID.fromString(set.getString("CreateUser")), set.getInt("X"), set.getInt("Y"), set.getInt("Z"));
+                return new FrameData(UUID.fromString(set.getString("CreateUser")), UUID.fromString(set.getString("ItemFrame")));
             } else {
                 return null;
             }
@@ -66,25 +53,17 @@ public class FrameData {
         }
     }
 
-    public FrameData getData(Connection con, Location loc){
-        return getData(con, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-    }
-
-    public boolean setData(Connection con, UUID createUser, int x, int y, int z){
+    public boolean setData(Connection con, UUID createUser, UUID itemFrameUUID){
         try {
             PreparedStatement statement;
-            if (getData(con, x, y, z) == null){
-                statement = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `X`, `Y`, `Z`) VALUES (?, ?, ?, ?); ");
+            if (getData(con, itemFrameUUID) == null){
+                statement = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?); ");
                 statement.setString(1, createUser.toString());
-                statement.setInt(2, x);
-                statement.setInt(3, y);
-                statement.setInt(4, z);
+                statement.setString(2, itemFrameUUID.toString());
             } else {
-                statement = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `X` = ? AND `Y` = ? AND `Z` = ?");
+                statement = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
                 statement.setString(1, createUser.toString());
-                statement.setInt(2, x);
-                statement.setInt(3, y);
-                statement.setInt(4, z);
+                statement.setString(2, itemFrameUUID.toString());
             }
             statement.execute();
             return true;
@@ -95,9 +74,5 @@ public class FrameData {
             }
             return false;
         }
-    }
-
-    public boolean setData(Connection con, UUID createUser, Location loc){
-        return setData(con, createUser, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
     }
 }
