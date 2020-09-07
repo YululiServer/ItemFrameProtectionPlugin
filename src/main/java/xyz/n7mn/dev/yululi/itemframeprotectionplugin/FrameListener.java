@@ -13,9 +13,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.api.FrameData;
 
@@ -81,6 +83,12 @@ class FrameListener implements Listener {
             FrameData data = new FrameData(plugin).getData(con, e.getEntity().getUniqueId());
             if (data != null){
                 e.setCancelled(true);
+            } else {
+                ItemFrame frame = (ItemFrame) e.getEntity();
+                if (frame.getItem().getType() != Material.AIR){
+                    ItemStack stack = new ItemStack(Material.AIR);
+                    frame.setItem(stack);
+                }
             }
         }
     }
@@ -103,15 +111,16 @@ class FrameListener implements Listener {
             FrameData data = new FrameData(plugin).getData(con, e.getEntity().getUniqueId());
             if (data != null){
                 e.setCancelled(true);
+            } else {
+                ItemFrame frame = (ItemFrame) e.getEntity().getVehicle();
+                if (frame != null && frame.getItem().getType() != Material.AIR){
+                    ItemStack stack = new ItemStack(Material.AIR);
+                    frame.setItem(stack);
+                }
             }
+
+
         }
     }
-/*
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void EntityDeathEvent (EntityDeathEvent e){
-        if (e.getEntity().getType() == EntityType.ITEM_FRAME){
-            e.setCancelled(true);
-        }
-    }
-*/
+
 }

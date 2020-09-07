@@ -51,8 +51,9 @@ class ItemframeTimer extends BukkitRunnable {
                 }
 
                 // 20tick = 1sec
-                // take : 72000L debug : 40L
-                new ItemframeTimer(plugin, con).runTaskLater(plugin, 72000L);
+                // take : 6000L debug : 40L
+                //
+                new ItemframeTimer(plugin, con).runTaskLater(plugin, 6000L);
                 //System.out.println(count + "件のゴミデータをお掃除完了。");
             }
         } catch (SQLException e){
