@@ -40,8 +40,10 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                             "  `ItemFrame` varchar(36) NOT NULL\n" +
                             ")").execute();
                 } else {
-                    PreparedStatement statement1 = con.prepareStatement("SELECT ItemFrame FROM IFPTable");
-                    if (!statement1.execute()){
+                    try {
+                        PreparedStatement statement1 = con.prepareStatement("SELECT ItemFrame FROM IFPTable");
+                        statement1.execute();
+                    } catch (Exception e){
                         con.prepareStatement("RENAME TABLE IFPTable TO IFPTable_old;").execute();
                         con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
                                 "  `CreateUser` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
@@ -81,9 +83,15 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 if (cre){
                     con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), ItemFrame VARCHAR(36)); ").execute();
                 } else {
-                    if (!con.prepareStatement("SELECT ItemFlame FROM IFPTable").executeQuery().next()){
-                        con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old; ").execute();
-                        con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), ItemFrame VARCHAR(36)); ").execute();
+                    try {
+                        con.prepareStatement("SELECT ItemFlame FROM IFPTable").executeQuery();
+                    } catch (SQLException e){
+                        try {
+                            con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old; ").execute();
+                            con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), ItemFrame VARCHAR(36)); ").execute();
+                        } catch (Exception ex){
+                            // ex.printStackTrace();
+                        }
                     }
                 }
 
@@ -97,6 +105,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
         if (con != null){
             getServer().getPluginManager().registerEvents(new FrameListener(this, con), this);
+            new ItemframeTimer(this, con).runTaskLater(this, 0L);
         }
     }
 
@@ -137,6 +146,17 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 if (getConfig().getBoolean("errorPrint")){
                     getLogger().info(ChatColor.RED + "エラーが発生しました。");
                     e.printStackTrace();
+                }
+            }
+        } else {
+            try {
+                con.prepareStatement("SELECT ItemFlame FROM IFPTable").execute();
+            } catch (Exception e){
+                try {
+                    con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old; ").execute();
+                    con.prepareStatement("create table IFPTable(CreateUser VARCHAR(36), ItemFrame VARCHAR(36)); ").execute();
+                } catch (Exception ex){
+                    // ex.printStackTrace();
                 }
             }
         }

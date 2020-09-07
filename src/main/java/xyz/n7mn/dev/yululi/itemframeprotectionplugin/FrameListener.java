@@ -1,24 +1,26 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Hanging;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.api.FrameData;
 
 import java.sql.Connection;
+import java.util.List;
 
 
 class FrameListener implements Listener {
@@ -104,4 +106,12 @@ class FrameListener implements Listener {
             }
         }
     }
+/*
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void EntityDeathEvent (EntityDeathEvent e){
+        if (e.getEntity().getType() == EntityType.ITEM_FRAME){
+            e.setCancelled(true);
+        }
+    }
+*/
 }

@@ -7,6 +7,10 @@ import org.bukkit.plugin.Plugin;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class FrameData {
@@ -74,5 +78,25 @@ public class FrameData {
             }
             return false;
         }
+    }
+
+    public List<FrameData> getDataList(Connection con) {
+        List<FrameData> list = new ArrayList<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable");
+            ResultSet set = statement.executeQuery();
+            while (set.next()) {
+                FrameData data = new FrameData(UUID.fromString(set.getString("CreateUser")), UUID.fromString(set.getString("ItemFrame")));
+                list.add(data);
+            }
+            return list;
+        } catch (SQLException e) {
+            if (plugin != null && plugin.getConfig().getBoolean("errorPrint")) {
+                plugin.getLogger().info(ChatColor.RED + "MySQL関係でエラーが発生しました");
+                e.printStackTrace();
+            }
+        }
+
+        return Collections.EMPTY_LIST;
     }
 }
