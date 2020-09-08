@@ -2,6 +2,7 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,7 +106,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
         if (con != null){
             getServer().getPluginManager().registerEvents(new FrameListener(this, con), this);
-            new ItemframeTimer(this, con).runTaskLater(this, 0L);
+            new ItemframeTimer(this, con).runTaskLaterAsynchronously(this, 0L);
         }
     }
 

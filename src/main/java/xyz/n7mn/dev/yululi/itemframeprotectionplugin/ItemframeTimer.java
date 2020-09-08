@@ -1,6 +1,7 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -53,11 +54,17 @@ class ItemframeTimer extends BukkitRunnable {
                 // 20tick = 1sec
                 // take : 6000L debug : 40L
                 //
-                new ItemframeTimer(plugin, con).runTaskLater(plugin, 6000L);
+                new ItemframeTimer(plugin, con).runTaskLaterAsynchronously(plugin, 6000L);
                 //System.out.println(count + "件のゴミデータをお掃除完了。");
             }
-        } catch (SQLException e){
-            // e.printStackTrace();
+        } catch (Exception e){
+            this.cancel();
+            if (plugin != null && plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーが発生しました");
+                e.printStackTrace();
+            }
+
         }
     }
+
 }
