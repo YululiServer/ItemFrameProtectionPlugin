@@ -1,6 +1,12 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -8,6 +14,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
@@ -30,6 +37,41 @@ class FrameListener implements Listener {
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
         // スネークしながら右クリックでロックしたり解除するようにする。
 
+        final Player player = e.getPlayer();
+        final Entity rightClicked = e.getRightClicked();
+        final FrameData data = getData(rightClicked.getUniqueId());
+
+        // 保護してない
+        if (data == null && rightClicked instanceof ItemFrame){
+            if (player.isSneaking()){
+                setData(player.getUniqueId(), rightClicked.getUniqueId());
+                player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スネークしながら右クリックで保護を解除できます。");
+                e.setCancelled(true);
+            } else {
+
+                if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE){
+                    ItemFrame frame = (ItemFrame) rightClicked;
+                    if (frame.getItem().getType() == Material.AIR){
+                        ItemStack hand = player.getInventory().getItemInMainHand();
+                        frame.setItem(hand);
+                        player.getInventory().addItem(hand);
+                    }
+                }
+
+            }
+        } else if (rightClicked instanceof ItemFrame) {
+            // 保護してる
+            if (player.isSneaking()){
+                if (data.getCreateUser().equals(player.getUniqueId()) || player.hasPermission("ifp.op")){
+                    setData(data.getCreateUser(), data.getItemFrame());
+                    player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スネークしながら右クリックで再度保護できます。");
+                    e.setCancelled(true);
+                } else {
+                    player.sendMessage(ChatColor.GREEN + "この額縁は保護されています。");
+                    e.setCancelled(true);
+                }
+            }
+        }
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
