@@ -40,33 +40,38 @@ class FrameListener implements Listener {
 
             // 保護してない
             if (data == null && rightClicked instanceof ItemFrame){
+                ItemFrame frame = (ItemFrame) rightClicked;
                 if (player.isSneaking()){
+                    if (frame.getItem().getType() == Material.AIR){
+                        frame.setItem(player.getInventory().getItemInMainHand());
+                    }
                     setData(player.getUniqueId(), rightClicked.getUniqueId());
                     player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スネークしながら右クリックで保護を解除できます。");
                     e.setCancelled(true);
                 } else {
 
                     if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE){
-                        ItemFrame frame = (ItemFrame) rightClicked;
+
                         if (frame.getItem().getType() == Material.AIR){
                             ItemStack hand = player.getInventory().getItemInMainHand();
                             frame.setItem(hand);
-                            player.getInventory().addItem(hand);
+                            // player.getInventory().addItem(hand);
+                            e.setCancelled(true);
                         }
                     }
 
                 }
-            } else if (rightClicked instanceof ItemFrame) {
+            }
+            if (rightClicked instanceof ItemFrame && data != null) {
                 // 保護してる
                 if (player.isSneaking()){
                     if (data.getCreateUser().equals(player.getUniqueId()) || player.hasPermission("ifp.op")){
                         setData(data.getCreateUser(), data.getItemFrame());
                         player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スネークしながら右クリックで再度保護できます。");
-                        e.setCancelled(true);
                     } else {
                         player.sendMessage(ChatColor.GREEN + "この額縁は保護されています。");
-                        e.setCancelled(true);
                     }
+                    e.setCancelled(true);
                 }
             }
         } catch (Exception ex){
@@ -84,10 +89,12 @@ class FrameListener implements Listener {
             if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
                 ItemFrame frame = (ItemFrame) e.getEntity();
                 if (frame.getItem().getType() != Material.AIR){
+
+                    frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
                     ItemStack stack = new ItemStack(Material.AIR);
                     frame.setItem(stack);
                 }
-            } else if (e.getEntity() instanceof ItemFrame) {
+            } else if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null) {
                 e.setCancelled(true);
             }
         } catch (Exception ex){
@@ -105,10 +112,13 @@ class FrameListener implements Listener {
             if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null) {
                 ItemFrame frame = (ItemFrame) e.getEntity();
                 if (frame.getItem().getType() != Material.AIR){
+                    frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
                     ItemStack stack = new ItemStack(Material.AIR);
                     frame.setItem(stack);
+                    e.setCancelled(true);
                 }
-            } else if (e.getEntity() instanceof ItemFrame){
+            }
+            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null){
                 e.setCancelled(true);
             }
         } catch (Exception ex){
@@ -125,10 +135,13 @@ class FrameListener implements Listener {
         if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
             ItemFrame frame = (ItemFrame) e.getEntity().getVehicle();
             if (frame != null && frame.getItem().getType() != Material.AIR){
+                frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
                 ItemStack stack = new ItemStack(Material.AIR);
                 frame.setItem(stack);
+                e.setCancelled(true);
             }
-        } else if (e.getEntity() instanceof ItemFrame){
+        }
+        if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null){
             e.setCancelled(true);
         }
     }
@@ -184,7 +197,7 @@ class FrameListener implements Listener {
                     e.printStackTrace();
                 }
             }
-        });
+        }).start();
     }
 
 }

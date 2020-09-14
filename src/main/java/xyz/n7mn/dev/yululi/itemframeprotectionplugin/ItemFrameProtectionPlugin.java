@@ -33,7 +33,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 con.setAutoCommit(true);
             }
 
-            getPluginLoader().createRegisteredListeners(new FrameListener(this, con),this);
+            getServer().getPluginManager().registerEvents(new FrameListener(this, con),this);
         } catch (Exception e){
             if (getConfig().getBoolean("errorPrint")){
                 getLogger().info(ChatColor.RED + "エラーを検知しました。");
@@ -58,7 +58,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                             }
                         }
                     }
-            );
+            ).start();
         }
     }
 }
