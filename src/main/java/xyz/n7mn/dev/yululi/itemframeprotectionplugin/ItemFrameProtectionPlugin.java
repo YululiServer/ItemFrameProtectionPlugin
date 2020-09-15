@@ -5,8 +5,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.concurrent.Executor;
 
 public final class ItemFrameProtectionPlugin extends JavaPlugin {
 

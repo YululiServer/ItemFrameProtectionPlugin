@@ -28,6 +28,8 @@ class ItemFrameTimer extends BukkitRunnable {
     public void run() {
 
         new Thread(()->{
+            // System.out.println("Timer run");
+
             try {
                 if (con != null){
 
@@ -73,6 +75,6 @@ class ItemFrameTimer extends BukkitRunnable {
             }
         }).start();
 
-        new ItemFrameTimer(plugin, con).runTaskLaterAsynchronously(plugin, 20L);
+        new ItemFrameTimer(plugin, con).runTaskLaterAsynchronously(plugin, 120L);
     }
 }
