@@ -3,20 +3,26 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -24,6 +30,7 @@ class FrameListener implements Listener {
 
     private final Plugin plugin;
     private final Connection con;
+    private Player player = null;
 
     public FrameListener(Plugin plugin, Connection con){
         this.plugin = plugin;
@@ -112,7 +119,6 @@ class FrameListener implements Listener {
             if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null) {
                 ItemFrame frame = (ItemFrame) e.getEntity();
                 if (frame.getItem().getType() != Material.AIR){
-                    frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
                     ItemStack stack = new ItemStack(Material.AIR);
                     frame.setItem(stack);
                     e.setCancelled(true);
@@ -130,22 +136,68 @@ class FrameListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void EntityDamageEvent (EntityDamageByEntityEvent e){
+    public void EntityDamageByEntityEvent (EntityDamageByEntityEvent e){
         // 額縁の中身を取り出されるとき
-        if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
-            ItemFrame frame = (ItemFrame) e.getEntity().getVehicle();
-            if (frame != null && frame.getItem().getType() != Material.AIR){
-                // frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
-                ItemStack stack = new ItemStack(Material.AIR);
-                frame.setItem(stack);
+        Entity damager = e.getDamager();
+        if (damager instanceof Player){
+            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
+                ItemFrame frame = (ItemFrame) e.getEntity();
+                if (frame.getItem().getType() != Material.AIR){
+                    Player player = (Player) e.getDamager();
+
+                    boolean itemNotAddflag = false;
+                    int count = -1;
+                    ItemStack frameItem = frame.getItem();
+                    for (int i = 0; i < player.getInventory().getSize(); i++) {
+                        ItemStack item = player.getInventory().getItem(i);
+
+                        if (item == null){
+                            continue;
+                        }
+
+                        if (item.getType() == Material.AIR){
+                            count = i;
+                            continue;
+                        }
+
+                        if (item.getType() == frameItem.getType()){
+
+                            if (item.getEnchantments().size() == frameItem.getEnchantments().size()){
+                                itemNotAddflag = true;
+                                for (Map.Entry<Enchantment , Integer> e1 : item.getEnchantments().entrySet()){
+                                    Integer value = e1.getValue();
+
+                                    for (Map.Entry<Enchantment, Integer> e2 : frameItem.getEnchantments().entrySet()){
+                                        itemNotAddflag = value.equals(e2.getValue());
+                                    }
+
+                                    if (!itemNotAddflag){
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    if (!itemNotAddflag && count != -1){
+                        player.getInventory().setItem(count, frameItem);
+                    } else if (!itemNotAddflag) {
+                        player.getLocation().getWorld().dropItem(player.getLocation(), frameItem);
+                    }
+
+                    ItemStack stack = new ItemStack(Material.AIR);
+                    frame.setItem(stack);
+                    e.setCancelled(true);
+                }
+            }
+            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null){
                 e.setCancelled(true);
             }
         }
-        if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null){
-            e.setCancelled(true);
-        }
-    }
 
+
+    }
 
     private FrameData getData(UUID itemFlame){
         FrameData data = null;
