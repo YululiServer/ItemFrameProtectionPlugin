@@ -66,6 +66,8 @@ class ItemFrameTimer extends BukkitRunnable {
                             }
                         }
                     }
+
+                    new ItemFrameTimer(plugin, con).runTaskLaterAsynchronously(plugin, 120L);
                 }
             } catch (Exception e){
                 if (plugin.getConfig().getBoolean("errorPrint")){
@@ -75,6 +77,5 @@ class ItemFrameTimer extends BukkitRunnable {
             }
         }).start();
 
-        new ItemFrameTimer(plugin, con).runTaskLaterAsynchronously(plugin, 120L);
     }
 }

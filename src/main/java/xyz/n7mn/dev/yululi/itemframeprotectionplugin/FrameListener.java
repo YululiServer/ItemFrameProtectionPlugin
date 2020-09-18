@@ -135,7 +135,7 @@ class FrameListener implements Listener {
         if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
             ItemFrame frame = (ItemFrame) e.getEntity().getVehicle();
             if (frame != null && frame.getItem().getType() != Material.AIR){
-                frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
+                // frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
                 ItemStack stack = new ItemStack(Material.AIR);
                 frame.setItem(stack);
                 e.setCancelled(true);
