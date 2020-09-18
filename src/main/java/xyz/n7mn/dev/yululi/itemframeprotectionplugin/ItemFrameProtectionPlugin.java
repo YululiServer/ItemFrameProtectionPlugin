@@ -50,7 +50,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                         statement1.execute();
                     } else {
                         try {
-                            con.prepareStatement("SELECT ItemFlame FROM IFPTable").execute();
+                            con.prepareStatement("SELECT ItemFrame FROM IFPTable").execute();
                         } catch (Exception e){
                             con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old").execute();
                             con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
