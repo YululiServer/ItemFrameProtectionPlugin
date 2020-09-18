@@ -3,7 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 apply plugin: 'java'
 
 group = 'xyz.n7mn.dev.yululi'
-version = '1.4'
+version = '2.0.1'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT'
+    compileOnly 'com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.0'
 
     compile files(fileTree(dir: 'lib', includes: ['*.jar']))
