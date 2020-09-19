@@ -177,7 +177,7 @@ class FrameListener implements Listener {
                                     }
                                 }
                                 if (!itemNotAddflag){
-                                    System.out.println("エンチャのついてるのが一部違う");
+                                    // System.out.println("エンチャのついてるのが一部違う");
                                     break;
                                 }
                             }
