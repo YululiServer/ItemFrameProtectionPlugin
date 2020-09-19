@@ -175,11 +175,10 @@ class FrameListener implements Listener {
                                     for (Map.Entry<Enchantment, Integer> e2 : frameItem.getEnchantments().entrySet()){
                                         itemNotAddflag = value.equals(e2.getValue());
                                     }
-
-                                    if (!itemNotAddflag){
-                                        System.out.println("エンチャついてるのが一部違う");
-                                        break;
-                                    }
+                                }
+                                if (!itemNotAddflag){
+                                    System.out.println("エンチャのついてるのが一部違う");
+                                    break;
                                 }
                             }
                         }
