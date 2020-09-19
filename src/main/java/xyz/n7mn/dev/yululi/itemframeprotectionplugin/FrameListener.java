@@ -165,8 +165,9 @@ class FrameListener implements Listener {
                         }
 
                         if (item.getType() == frameItem.getType()){
-
+                            System.out.println("タイプが同じ");
                             if (item.getEnchantments().size() == frameItem.getEnchantments().size()){
+                                System.out.println("エンチャのついてる数が同じ");
                                 itemNotAddflag = true;
                                 for (Map.Entry<Enchantment , Integer> e1 : item.getEnchantments().entrySet()){
                                     Integer value = e1.getValue();
@@ -174,10 +175,10 @@ class FrameListener implements Listener {
                                     for (Map.Entry<Enchantment, Integer> e2 : frameItem.getEnchantments().entrySet()){
                                         itemNotAddflag = value.equals(e2.getValue());
                                     }
-
-                                    if (!itemNotAddflag){
-                                        break;
-                                    }
+                                }
+                                if (!itemNotAddflag){
+                                    // System.out.println("エンチャのついてるのが一部違う");
+                                    break;
                                 }
                             }
                         }
