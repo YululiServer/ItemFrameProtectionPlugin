@@ -139,14 +139,14 @@ class FrameListener implements Listener {
     public void EntityDamageByEntityEvent (EntityDamageByEntityEvent e){
         // 額縁の中身を取り出されるとき
         Entity damager = e.getDamager();
-        System.out.println("【速報】プラグイン、イベントが発生したことを検知する。");
+        // System.out.println("【速報】プラグイン、イベントが発生したことを検知する。");
         if (damager instanceof Player){
-            System.out.println("【速報】プラグイン、人が殴ったことを認める。");
+            // System.out.println("【速報】プラグイン、人が殴ったことを認める。");
             if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
-                System.out.println("【速報】プラグイン、ロックされてないやつ　かつ　額縁だったことを認める。");
+                // System.out.println("【速報】プラグイン、ロックされてないやつ　かつ　額縁だったことを認める。");
                 ItemFrame frame = (ItemFrame) e.getEntity();
                 if (frame.getItem().getType() != Material.AIR){
-                    System.out.println("【速報】プラグイン、額縁に中身が入ってると認める。");
+                    // System.out.println("【速報】プラグイン、額縁に中身が入ってると認める。");
                     Player player = (Player) e.getDamager();
 
                     boolean itemNotAddflag = false;
@@ -184,28 +184,28 @@ class FrameListener implements Listener {
                     }
 
 
-                    System.out.println("アイテムどうなった？");
+                    // System.out.println("アイテムどうなった？");
                     if (!itemNotAddflag && count != -1){
-                        System.out.println(" ---> アイテム追加されてる");
+                        // System.out.println(" ---> アイテム追加されてる");
                         player.getInventory().setItem(count, frameItem);
                     } else if (!itemNotAddflag) {
-                        System.out.println(" ---> アイテムドロップされてる");
+                        // System.out.println(" ---> アイテムドロップされてる");
                         player.getLocation().getWorld().dropItem(player.getLocation(), frameItem);
                     } else {
-                        System.out.println(" ---> アイテム持ってるって認識したからなにもしない。");
+                        // System.out.println(" ---> アイテム持ってるって認識したからなにもしない。");
                     }
 
                     ItemStack stack = new ItemStack(Material.AIR);
                     frame.setItem(stack);
                     e.setCancelled(true);
                 } else {
-                    System.out.println("【速報】プラグイン、額縁に中身が入っていないと発表。");
-                    System.out.println("getItem().getType() : " + frame.getItem().getType());
+                    // System.out.println("【速報】プラグイン、額縁に中身が入っていないと発表。");
+                    // System.out.println("getItem().getType() : " + frame.getItem().getType());
                     e.setCancelled(true);
                 }
             }
             if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null){
-                System.out.println("【速報】プラグイン、ロックされてるのは無条件キャンセルとの発表");
+                // System.out.println("【速報】プラグイン、ロックされてるのは無条件キャンセルとの発表");
                 e.setCancelled(true);
             }
         }
