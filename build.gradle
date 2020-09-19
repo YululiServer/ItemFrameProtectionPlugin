@@ -3,7 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 apply plugin: 'java'
 
 group = 'xyz.n7mn.dev.yululi'
-version = '2.0.1'
+version = '2.0.2'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -21,10 +21,14 @@ repositories {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
+    maven {
+        name = 'repo.acrylicstyle.xyz'
+        url = 'https://repo.acrylicstyle.xyz/'
+    }
 }
 
 dependencies {
-    compileOnly 'com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT'
+    compileOnly 'xyz.acrylicstyle.grid:grid-api:1.16.3-R0.1-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.0'
 
     compile files(fileTree(dir: 'lib', includes: ['*.jar']))
