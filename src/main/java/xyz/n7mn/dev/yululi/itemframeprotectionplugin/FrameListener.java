@@ -3,20 +3,17 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
@@ -31,6 +28,8 @@ class FrameListener implements Listener {
     private final Plugin plugin;
     private final Connection con;
     private Player player = null;
+    private Player dropPlayer = null;
+    private Item dropItem = null;
 
     public FrameListener(Plugin plugin, Connection con){
         this.plugin = plugin;
@@ -152,38 +151,30 @@ class FrameListener implements Listener {
                     boolean itemNotAddflag = false;
                     int count = -1;
                     ItemStack frameItem = frame.getItem();
-                    for (int i = 0; i < player.getInventory().getSize(); i++) {
-                        ItemStack item = player.getInventory().getItem(i);
 
+                    for (int i = 0; i < player.getInventory().getSize(); i++){
+                        ItemStack item = player.getInventory().getItem(i);
                         if (item == null){
                             continue;
                         }
 
                         if (item.getType() == Material.AIR){
                             count = i;
-                            continue;
                         }
 
-                        if (item.getType() == frameItem.getType()){
-                            System.out.println("タイプが同じ");
-                            if (item.getEnchantments().size() == frameItem.getEnchantments().size()){
-                                System.out.println("エンチャのついてる数が同じ");
-                                itemNotAddflag = true;
-                                for (Map.Entry<Enchantment , Integer> e1 : item.getEnchantments().entrySet()){
-                                    Integer value = e1.getValue();
-
-                                    for (Map.Entry<Enchantment, Integer> e2 : frameItem.getEnchantments().entrySet()){
-                                        itemNotAddflag = value.equals(e2.getValue());
-                                    }
-                                }
-                                if (!itemNotAddflag){
-                                    // System.out.println("エンチャのついてるのが一部違う");
-                                    break;
-                                }
-                            }
+                        if (ItemStackEqual(frameItem, player.getInventory().getItem(i))){
+                            itemNotAddflag = true;
+                            break;
                         }
                     }
 
+                    if (!itemNotAddflag && dropItem != null && dropPlayer != null){
+                        ItemStack itemStack = dropItem.getItemStack();
+
+                        if (player.getUniqueId().equals(dropPlayer.getUniqueId())){
+                            itemNotAddflag = ItemStackEqual(itemStack, frame.getItem());
+                        }
+                    }
 
                     // System.out.println("アイテムどうなった？");
                     if (!itemNotAddflag && count != -1){
@@ -210,8 +201,13 @@ class FrameListener implements Listener {
                 e.setCancelled(true);
             }
         }
+    }
 
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void PlayerDropItemEvent (PlayerDropItemEvent e){
+        dropPlayer = e.getPlayer();
+        dropItem = e.getItemDrop();
     }
 
     private FrameData getData(UUID itemFlame){
@@ -267,4 +263,68 @@ class FrameListener implements Listener {
         }).start();
     }
 
+
+    private boolean ItemStackEqual(ItemStack item1, ItemStack item2){
+
+        /*
+        for (int i = 0; i < player.getInventory().getSize(); i++) {
+            ItemStack item = player.getInventory().getItem(i);
+
+            if (item == null){
+                continue;
+            }
+
+            if (item.getType() == Material.AIR){
+                count = i;
+                continue;
+            }
+
+            if (item.getType() == frameItem.getType()){
+                System.out.println("タイプが同じ");
+                if (item.getEnchantments().size() == frameItem.getEnchantments().size()){
+                    System.out.println("エンチャのついてる数が同じ");
+                    itemNotAddflag = true;
+                    for (Map.Entry<Enchantment , Integer> e1 : item.getEnchantments().entrySet()){
+                        Integer value = e1.getValue();
+
+                        for (Map.Entry<Enchantment, Integer> e2 : frameItem.getEnchantments().entrySet()){
+                            itemNotAddflag = value.equals(e2.getValue());
+                        }
+                    }
+                    if (!itemNotAddflag){
+                        // System.out.println("エンチャのついてるのが一部違う");
+                        break;
+                    }
+                }
+            }
+        }
+         */
+
+        if (item1 == null && item2 == null){
+            return true;
+        }
+
+        if (item1 != null && item2 != null && item1.getType() == item2.getType()){
+
+            if (item1.getEnchantments().size() == item2.getEnchantments().size()){
+
+                boolean flag = true;
+
+                for (Map.Entry<Enchantment , Integer> e1 : item1.getEnchantments().entrySet()){
+                    Integer value = e1.getValue();
+
+                    for (Map.Entry<Enchantment, Integer> e2 : item2.getEnchantments().entrySet()){
+                        flag = value.equals(e2.getValue());
+                    }
+                }
+
+                return flag;
+            }
+
+        }
+
+
+        return false;
+
+    }
 }
