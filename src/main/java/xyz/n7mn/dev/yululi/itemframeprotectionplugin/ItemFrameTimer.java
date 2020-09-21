@@ -59,10 +59,14 @@ class ItemFrameTimer extends BukkitRunnable {
                                 }
                             }
                             if (!flag){
-                                PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
-                                statement1.setString(1, temp.getCreateUser().toString());
-                                statement1.setString(2, temp.getItemFrame().toString());
-                                statement1.execute();
+
+                                Entity entity = Bukkit.getEntity(temp.getItemFrame());
+                                if (entity == null){
+                                    PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
+                                    statement1.setString(1, temp.getCreateUser().toString());
+                                    statement1.setString(2, temp.getItemFrame().toString());
+                                    statement1.execute();
+                                }
                             }
                         }
                     }
