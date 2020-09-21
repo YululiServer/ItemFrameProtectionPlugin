@@ -28,7 +28,7 @@ class ItemFrameTimer extends BukkitRunnable {
     public void run() {
 
         new Thread(()->{
-            // System.out.println("Timer run");
+            System.out.println("Timer run");
 
             try {
                 if (con != null){
@@ -48,6 +48,10 @@ class ItemFrameTimer extends BukkitRunnable {
                             boolean flag = false;
                             for (World world : worlds){
                                 final List<Entity> entities = world.getEntities();
+                                if (entities.size() == 0){
+                                    break;
+                                }
+                                // System.out.println("entities : " + entities.size());
                                 for (Entity entity : entities){
                                     if (entity.getUniqueId().equals(temp.getItemFrame())){
                                         flag = true;
