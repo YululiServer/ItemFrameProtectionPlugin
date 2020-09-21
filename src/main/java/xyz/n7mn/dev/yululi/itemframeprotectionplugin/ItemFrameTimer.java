@@ -28,7 +28,7 @@ class ItemFrameTimer extends BukkitRunnable {
     public void run() {
 
         new Thread(()->{
-            System.out.println("Timer run");
+            // System.out.println("Timer run");
 
             try {
                 if (con != null){

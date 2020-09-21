@@ -42,20 +42,30 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 con = DriverManager.getConnection("jdbc:sqlite:"+pass);
                 con.setAutoCommit(true);
 
-                PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='IFPTable';");
-                ResultSet set = statement.executeQuery();
-                if (set.next()){
-                    if (set.getInt("COUNT(*)") == 0){
-                        PreparedStatement statement1 = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
-                        statement1.execute();
-                    } else {
-                        try {
-                            con.prepareStatement("SELECT ItemFrame FROM IFPTable").execute();
-                        } catch (Exception e){
-                            // System.out.println("あれれー？");
-                            con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old").execute();
-                            con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
-                        }
+                PreparedStatement statement1 = con.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='IFPTable';");
+                ResultSet set1 = statement1.executeQuery();
+                PreparedStatement statement2 = con.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='IFPTable2';");
+                ResultSet set2 = statement2.executeQuery();
+
+                if (set1.next() && set1.getInt("COUNT(*)") == 0){
+                    con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
+                } else {
+                    try {
+                        con.prepareStatement("SELECT ItemFrame FROM IFPTable").execute();
+                    } catch (Exception e){
+                        con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old").execute();
+                        con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
+                    }
+                }
+
+                if (set2.next() && set2.getInt("COUNT(*)") == 0){
+                    con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();
+                } else {
+                    try {
+                        con.prepareStatement("SELECT ItemJSON FROM IFPTable2").execute();
+                    } catch (Exception e){
+                        con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old").execute();
+                        con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();
                     }
                 }
 
