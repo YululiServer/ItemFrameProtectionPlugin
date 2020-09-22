@@ -48,6 +48,10 @@ class ItemFrameTimer extends BukkitRunnable {
                             boolean flag = false;
                             for (World world : worlds){
                                 final List<Entity> entities = world.getEntities();
+                                if (entities.size() == 0){
+                                    break;
+                                }
+                                // System.out.println("entities : " + entities.size());
                                 for (Entity entity : entities){
                                     if (entity.getUniqueId().equals(temp.getItemFrame())){
                                         flag = true;
@@ -59,10 +63,14 @@ class ItemFrameTimer extends BukkitRunnable {
                                 }
                             }
                             if (!flag){
-                                PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
-                                statement1.setString(1, temp.getCreateUser().toString());
-                                statement1.setString(2, temp.getItemFrame().toString());
-                                statement1.execute();
+
+                                Entity entity = Bukkit.getEntity(temp.getItemFrame());
+                                if (entity == null){
+                                    PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
+                                    statement1.setString(1, temp.getCreateUser().toString());
+                                    statement1.setString(2, temp.getItemFrame().toString());
+                                    statement1.execute();
+                                }
                             }
                         }
                     }

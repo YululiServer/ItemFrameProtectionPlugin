@@ -18,7 +18,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
         try {
             saveDefaultConfig();
 
-            boolean useMySQL = false; // getConfig().getBoolean("useMySQL");
+            boolean useMySQL = getConfig().getBoolean("useMySQL");
 
             if (useMySQL){
                 final String MySQLServer = getConfig().getString("MySQLServer");
@@ -31,10 +31,35 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 try {
                     con.prepareStatement("SELECT 1 FROM IFPTable LIMIT 1;").execute();
                 } catch (Exception e){
-                    con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
-                            "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
-                            "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
-                            ")").execute();
+                    try {
+                        con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                                "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    } catch (Exception ex){
+                        con.prepareStatement(" RENAME TABLE `IFPTable` TO `IFPTable_old`; ").execute();
+                        con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                                "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    }
+                }
+
+                try {
+                    con.prepareStatement("SELECT 1 FROM IFPTable2 LIMIT 1;").execute();
+                } catch (Exception e){
+                    try {
+                        con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                                "  `DropUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemUUID` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    } catch (Exception ex){
+                        con.prepareStatement(" RENAME TABLE `IFPTable2` TO `IFPTable2_old`; ").execute();
+                        con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                                "  `DropUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemUUID` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    }
                 }
 
             } else {
@@ -42,19 +67,30 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 con = DriverManager.getConnection("jdbc:sqlite:"+pass);
                 con.setAutoCommit(true);
 
-                PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='IFPTable';");
-                ResultSet set = statement.executeQuery();
-                if (set.next()){
-                    if (set.getInt("COUNT(*)") == 0){
-                        PreparedStatement statement1 = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
-                        statement1.execute();
-                    } else {
-                        try {
-                            con.prepareStatement("SELECT ItemFrame FROM IFPTable").execute();
-                        } catch (Exception e){
-                            con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old").execute();
-                            con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
-                        }
+                PreparedStatement statement1 = con.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='IFPTable';");
+                ResultSet set1 = statement1.executeQuery();
+                PreparedStatement statement2 = con.prepareStatement("SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='IFPTable2';");
+                ResultSet set2 = statement2.executeQuery();
+
+                if (set1.next() && set1.getInt("COUNT(*)") == 0){
+                    con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
+                } else {
+                    try {
+                        con.prepareStatement("SELECT ItemFrame FROM IFPTable").execute();
+                    } catch (Exception e){
+                        con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old").execute();
+                        con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
+                    }
+                }
+
+                if (set2.next() && set2.getInt("COUNT(*)") == 0){
+                    con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();
+                } else {
+                    try {
+                        con.prepareStatement("SELECT ItemUUID FROM IFPTable2").execute();
+                    } catch (Exception e){
+                        con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old").execute();
+                        con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();
                     }
                 }
 
@@ -63,6 +99,8 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new FrameListener(this, con),this);
 
             new ItemFrameTimer(this, con).runTaskLaterAsynchronously(this, 0L);
+
+            getCommand("ifp").setExecutor(new ItemFrameCommand());
         } catch (Exception e){
             if (getConfig().getBoolean("errorPrint")){
                 getLogger().info(ChatColor.RED + "エラーを検知しました。");

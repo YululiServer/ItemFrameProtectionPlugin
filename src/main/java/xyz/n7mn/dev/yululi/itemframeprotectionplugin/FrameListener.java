@@ -1,27 +1,24 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import com.google.gson.Gson;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -152,38 +149,53 @@ class FrameListener implements Listener {
                     boolean itemNotAddflag = false;
                     int count = -1;
                     ItemStack frameItem = frame.getItem();
-                    for (int i = 0; i < player.getInventory().getSize(); i++) {
-                        ItemStack item = player.getInventory().getItem(i);
 
+                    for (int i = 0; i < player.getInventory().getSize(); i++){
+                        ItemStack item = player.getInventory().getItem(i);
                         if (item == null){
                             continue;
                         }
 
                         if (item.getType() == Material.AIR){
                             count = i;
-                            continue;
                         }
 
-                        if (item.getType() == frameItem.getType()){
-                            System.out.println("タイプが同じ");
-                            if (item.getEnchantments().size() == frameItem.getEnchantments().size()){
-                                System.out.println("エンチャのついてる数が同じ");
-                                itemNotAddflag = true;
-                                for (Map.Entry<Enchantment , Integer> e1 : item.getEnchantments().entrySet()){
-                                    Integer value = e1.getValue();
-
-                                    for (Map.Entry<Enchantment, Integer> e2 : frameItem.getEnchantments().entrySet()){
-                                        itemNotAddflag = value.equals(e2.getValue());
-                                    }
-                                }
-                                if (!itemNotAddflag){
-                                    // System.out.println("エンチャのついてるのが一部違う");
-                                    break;
-                                }
-                            }
+                        if (ItemStackEqual(frameItem, player.getInventory().getItem(i))){
+                            itemNotAddflag = true;
+                            break;
                         }
                     }
 
+                    boolean dropItemFlag = false;
+                    List<Item> dropList = getDrop(player.getUniqueId());
+                    if (dropList != null && dropList.size() > 0){
+                        List<World> worlds = Bukkit.getServer().getWorlds();
+                        for (Item item : dropList){
+
+                            // System.out.println("チェック1");
+                            for (World world : worlds){
+                                Entity entity = world.getEntity(item.getUniqueId());
+                                if (entity != null){
+                                    //System.out.println("チェック2 : " + entity.getType());
+                                }// else {
+                                    // System.out.println("チェック2 : null");
+                                // }
+
+                                if (entity != null && entity.getType() == EntityType.DROPPED_ITEM){
+                                    // System.out.println("うまくいってる？");
+                                    Item dropItem = (Item) entity;
+                                    dropItemFlag = ItemStackEqual(frameItem, dropItem.getItemStack());
+                                }
+                                if (dropItemFlag){
+                                    itemNotAddflag = true;
+                                    break;
+                                }
+                            }
+                            if (itemNotAddflag){
+                                break;
+                            }
+                        }
+                    }
 
                     // System.out.println("アイテムどうなった？");
                     if (!itemNotAddflag && count != -1){
@@ -196,8 +208,10 @@ class FrameListener implements Listener {
                         // System.out.println(" ---> アイテム持ってるって認識したからなにもしない。");
                     }
 
-                    ItemStack stack = new ItemStack(Material.AIR);
-                    frame.setItem(stack);
+                    if (!dropItemFlag){
+                        ItemStack stack = new ItemStack(Material.AIR);
+                        frame.setItem(stack);
+                    }
                     e.setCancelled(true);
                 } else {
                     // System.out.println("【速報】プラグイン、額縁に中身が入っていないと発表。");
@@ -210,8 +224,17 @@ class FrameListener implements Listener {
                 e.setCancelled(true);
             }
         }
+    }
 
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void PlayerDropItemEvent (PlayerDropItemEvent e){
+        setDrop(e.getPlayer().getUniqueId(), e.getItemDrop());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void PlayerAttemptPickupItemEvent(PlayerAttemptPickupItemEvent e){
+        setDrop(e.getPlayer().getUniqueId(), e.getItem());
     }
 
     private FrameData getData(UUID itemFlame){
@@ -242,6 +265,70 @@ class FrameListener implements Listener {
         return data;
     }
 
+    private List<Item> getDrop(UUID dropUser){
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE DropUser = ?");
+            statement.setString(1, dropUser.toString());
+            ResultSet resultSet = statement.executeQuery();
+
+            List<Item> list = new ArrayList<>();
+            while (resultSet.next()){
+                List<World> worlds = Bukkit.getServer().getWorlds();
+                for (World world : worlds){
+                    Entity entity = world.getEntity(UUID.fromString(resultSet.getString("ItemUUID")));
+                    if (entity != null){
+                        if (entity.getType() == EntityType.DROPPED_ITEM){
+                            list.add((Item) entity);
+                        }
+                    }
+                }
+            }
+
+            return list;
+        } catch (Exception e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    private void setDrop(UUID dropUser, Item dropItem){
+
+        new Thread(() -> {
+            try {
+                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE DropUser = ? AND ItemUUID = ?");
+                statement.setString(1, dropUser.toString());
+                statement.setString(2, dropItem.getUniqueId().toString());
+                ResultSet resultSet = statement.executeQuery();
+                if (resultSet.next()){
+                    if (resultSet.getString("DropUser").length() > 0){
+                        PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
+                        statement1.setString(1, dropUser.toString());
+                        statement1.setString(2, dropItem.getUniqueId().toString());
+                        statement1.execute();
+                    } else {
+                        PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                        statement1.setString(1, dropUser.toString());
+                        statement1.setString(2, dropItem.getUniqueId().toString());
+                        statement1.execute();
+                    }
+                } else {
+                    PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                    statement1.setString(1, dropUser.toString());
+                    statement1.setString(2, dropItem.getUniqueId().toString());
+                    statement1.execute();
+                }
+            } catch (Exception e){
+                if (plugin.getConfig().getBoolean("errorPrint")){
+                    plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     private void setData(UUID createUser, UUID itemFlame){
         new Thread(() -> {
             try {
@@ -267,4 +354,34 @@ class FrameListener implements Listener {
         }).start();
     }
 
+
+    private boolean ItemStackEqual(ItemStack item1, ItemStack item2){
+
+        if (item1 == null && item2 == null){
+            return true;
+        }
+
+        if (item1 != null && item2 != null && item1.getType() == item2.getType()){
+
+            if (item1.getEnchantments().size() == item2.getEnchantments().size()){
+
+                boolean flag = true;
+
+                for (Map.Entry<Enchantment , Integer> e1 : item1.getEnchantments().entrySet()){
+                    Integer value = e1.getValue();
+
+                    for (Map.Entry<Enchantment, Integer> e2 : item2.getEnchantments().entrySet()){
+                        flag = value.equals(e2.getValue());
+                    }
+                }
+
+                return flag;
+            }
+
+        }
+
+
+        return false;
+
+    }
 }
