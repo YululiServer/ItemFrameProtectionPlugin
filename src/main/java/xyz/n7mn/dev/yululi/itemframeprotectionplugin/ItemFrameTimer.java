@@ -70,11 +70,13 @@ class ItemFrameTimer extends BukkitRunnable {
                                     statement1.setString(1, temp.getCreateUser().toString());
                                     statement1.setString(2, temp.getItemFrame().toString());
                                     statement1.execute();
+                                    statement1.close();
                                 }
                             }
                         }
                     }
 
+                    statement.close();
                     new ItemFrameTimer(plugin, con).runTaskLaterAsynchronously(plugin, 120L);
                 }
             } catch (Exception e){
@@ -83,6 +85,7 @@ class ItemFrameTimer extends BukkitRunnable {
                     e.printStackTrace();
                 }
             }
+            return;
         }).start();
 
     }
