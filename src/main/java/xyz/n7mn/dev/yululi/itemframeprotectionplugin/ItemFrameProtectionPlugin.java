@@ -31,10 +31,35 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 try {
                     con.prepareStatement("SELECT 1 FROM IFPTable LIMIT 1;").execute();
                 } catch (Exception e){
-                    con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
-                            "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
-                            "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
-                            ")").execute();
+                    try {
+                        con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                                "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    } catch (Exception ex){
+                        con.prepareStatement(" RENAME TABLE `IFPTable` TO `IFPTable_old`; ").execute();
+                        con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                                "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    }
+                }
+
+                try {
+                    con.prepareStatement("SELECT 1 FROM IFPTable2 LIMIT 1;").execute();
+                } catch (Exception e){
+                    try {
+                        con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                                "  `DropUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemUUID` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    } catch (Exception ex){
+                        con.prepareStatement(" RENAME TABLE `IFPTable2` TO `IFPTable2_old`; ").execute();
+                        con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                                "  `DropUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
+                                "  `ItemUUID` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
+                                ")").execute();
+                    }
                 }
 
             } else {
