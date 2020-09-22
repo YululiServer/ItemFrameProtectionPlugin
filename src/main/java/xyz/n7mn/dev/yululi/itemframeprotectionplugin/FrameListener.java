@@ -296,14 +296,14 @@ class FrameListener implements Listener {
 
     private void setDrop(UUID dropUser, Item dropItem){
 
-        new Thread(() -> {
+        Thread thread = new Thread(() -> {
             try {
                 PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE DropUser = ? AND ItemUUID = ?");
                 statement.setString(1, dropUser.toString());
                 statement.setString(2, dropItem.getUniqueId().toString());
                 ResultSet resultSet = statement.executeQuery();
-                if (resultSet.next()){
-                    if (resultSet.getString("DropUser").length() > 0){
+                if (resultSet.next()) {
+                    if (resultSet.getString("DropUser").length() > 0) {
                         PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
                         statement1.setString(1, dropUser.toString());
                         statement1.setString(2, dropItem.getUniqueId().toString());
@@ -320,13 +320,18 @@ class FrameListener implements Listener {
                     statement1.setString(2, dropItem.getUniqueId().toString());
                     statement1.execute();
                 }
-            } catch (Exception e){
-                if (plugin.getConfig().getBoolean("errorPrint")){
+                statement.close();
+            } catch (Exception e) {
+                if (plugin.getConfig().getBoolean("errorPrint")) {
                     plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
                     e.printStackTrace();
                 }
             }
-        }).start();
+
+            return;
+        });
+
+        thread.start();
     }
 
     private void setData(UUID createUser, UUID itemFlame){
@@ -338,11 +343,13 @@ class FrameListener implements Listener {
                         statement1.setString(1, createUser.toString());
                         statement1.setString(2, itemFlame.toString());
                         statement1.execute();
+                        statement1.close();
                     } else {
                         PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
                         statement1.setString(1, createUser.toString());
                         statement1.setString(2, itemFlame.toString());
                         statement1.execute();
+                        statement1.close();
                     }
                 }
             } catch (Exception e) {
@@ -351,6 +358,7 @@ class FrameListener implements Listener {
                     e.printStackTrace();
                 }
             }
+            return;
         }).start();
     }
 

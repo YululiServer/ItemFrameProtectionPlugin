@@ -124,6 +124,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                                 e.printStackTrace();
                             }
                         }
+                        return;
                     }
             ).start();
         }
