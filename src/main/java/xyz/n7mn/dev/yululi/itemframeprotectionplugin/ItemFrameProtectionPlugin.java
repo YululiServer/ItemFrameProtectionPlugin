@@ -99,6 +99,8 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new FrameListener(this, con),this);
 
             new ItemFrameTimer(this, con).runTaskLaterAsynchronously(this, 0L);
+
+            getCommand("ifp").setExecutor(new ItemFrameCommand());
         } catch (Exception e){
             if (getConfig().getBoolean("errorPrint")){
                 getLogger().info(ChatColor.RED + "エラーを検知しました。");

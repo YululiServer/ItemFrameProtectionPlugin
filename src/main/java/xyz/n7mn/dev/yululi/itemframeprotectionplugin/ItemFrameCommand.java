@@ -21,15 +21,18 @@ class ItemFrameCommand implements CommandExecutor {
 
                 if (player.hasPermission("ifp.op")){
                     player.sendMessage("----- ItemFrameProtectionPlugin Ver "+ plugin.getDescription().getVersion());
-                    player.sendMessage("/ifp list --- 額縁ロックMyリスト");
-                    player.sendMessage("/ifp alllist --- 額縁ロック全ロックリスト");
+                    player.sendMessage("とくに何も起きません。残念でした。");
+                    // player.sendMessage("/ifp list --- 額縁ロックMyリスト");
+                    // player.sendMessage("/ifp alllist --- 額縁ロック全ロックリスト");
                 } else {
                     player.sendMessage("----- ItemFrameProtectionPlugin Ver "+ plugin.getDescription().getVersion());
-                    player.sendMessage("/ifp list --- 額縁ロックMyリスト");
+                    player.sendMessage("とくに何も起きません。残念でした。");
+                    // player.sendMessage("/ifp list --- 額縁ロックMyリスト");
                 }
             } else if (args.length == 0) {
                 sender.sendMessage("----- ItemFrameProtectionPlugin Ver "+ plugin.getDescription().getVersion());
-                sender.sendMessage("/ifp list --- 額縁ロックリスト");
+                sender.sendMessage("とくに何も起きません。残念でした。");
+                // sender.sendMessage("/ifp list --- 額縁ロックリスト");
             }
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
