@@ -36,6 +36,12 @@ class FrameListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
+
+        if (!(e.getRightClicked() instanceof ItemFrame)){
+            return;
+        }
+
+
         // スネークしながら右クリックでロックしたり解除するようにする。
         try {
             final Player player = e.getPlayer();
@@ -88,6 +94,11 @@ class FrameListener implements Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public void BlockBreakEvent (HangingBreakEvent e){
+
+        if (!(e.getEntity() instanceof ItemFrame)){
+            return;
+        }
+
         // 額縁壊されるとき
         try {
             if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
@@ -111,6 +122,11 @@ class FrameListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void EntityDamageEvent (EntityDamageEvent e){
+
+        if (!(e.getEntity() instanceof ItemFrame)){
+            return;
+        }
+
         // 額縁の中身消されたとき
         try {
             if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null) {
@@ -134,6 +150,11 @@ class FrameListener implements Listener {
 
     @EventHandler(priority = EventPriority.VERY_LOWEST)
     public void EntityDamageByEntityEvent (EntityDamageByEntityEvent e){
+
+        if (!(e.getEntity() instanceof ItemFrame)){
+            return;
+        }
+
         // 額縁の中身を取り出されるとき
         Entity damager = e.getDamager();
         // System.out.println("【速報】プラグイン、イベントが発生したことを検知する。");
@@ -229,6 +250,7 @@ class FrameListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerDropItemEvent (PlayerDropItemEvent e){
+
         setDrop(e.getPlayer().getUniqueId(), e.getItemDrop());
     }
 
@@ -354,22 +376,27 @@ class FrameListener implements Listener {
         Thread thread = new Thread(() -> {
             boolean a = true;
             while(a){
+                PreparedStatement statement = null;
                 PreparedStatement statement1 = null;
                 try {
                     if (con != null) {
-                        if (getData(itemFlame) == null) {
-                            statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
+
+                        statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable WHERE ItemFrame = ?");
+                        statement.setString(1, itemFlame.toString());
+                        ResultSet resultSet = statement.executeQuery();
+                        if (resultSet.next()){
+                            if (resultSet.getInt("COUNT(*)") == 0) {
+                                statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
+                            } else {
+                                statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
+                            }
                             statement1.setString(1, createUser.toString());
                             statement1.setString(2, itemFlame.toString());
-                            statement1.execute();
-                            statement1.close();
-                        } else {
-                            statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
-                            statement1.setString(1, createUser.toString());
-                            statement1.setString(2, itemFlame.toString());
+
                             statement1.execute();
                             statement1.close();
                         }
+                        statement.close();
                     }
                 } catch (Exception e) {
                     if (plugin.getConfig().getBoolean("errorPrint")) {
