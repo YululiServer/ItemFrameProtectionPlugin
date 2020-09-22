@@ -329,20 +329,19 @@ class FrameListener implements Listener {
                     statement.setString(1, dropUser.toString());
                     statement.setString(2, dropItem.getUniqueId().toString());
                     ResultSet resultSet = statement.executeQuery();
+                    statement.close();
                     if (resultSet.next()) {
+
                         if (resultSet.getString("DropUser").length() > 0) {
                             statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
-                            statement1.setString(1, dropUser.toString());
-                            statement1.setString(2, dropItem.getUniqueId().toString());
-                            statement1.execute();
-                            statement1.close();
                         } else {
                             statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
-                            statement1.setString(1, dropUser.toString());
-                            statement1.setString(2, dropItem.getUniqueId().toString());
-                            statement1.execute();
-                            statement1.close();
                         }
+                        statement1.setString(1, dropUser.toString());
+                        statement1.setString(2, dropItem.getUniqueId().toString());
+                        statement1.execute();
+                        statement1.close();
+
                     } else {
                         statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
                         statement1.setString(1, dropUser.toString());
@@ -350,7 +349,7 @@ class FrameListener implements Listener {
                         statement1.execute();
                         statement1.close();
                     }
-                    statement.close();
+
                 } catch (Exception e) {
                     if (plugin.getConfig().getBoolean("errorPrint")) {
                         plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
