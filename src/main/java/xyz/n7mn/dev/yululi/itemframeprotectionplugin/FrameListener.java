@@ -177,6 +177,28 @@ class FrameListener implements Listener {
                     //    }
                     //}
 
+
+                    List<Item> dropList = getDrop(player.getUniqueId());
+                    if (dropList != null && dropList.size() > 0){
+                        List<World> worlds = Bukkit.getServer().getWorlds();
+                        for (Item item : dropList){
+
+                            for (World world : worlds){
+                                Entity entity = world.getEntity(item.getUniqueId());
+                                if (entity != null && entity.getType() == EntityType.DROPPED_ITEM && entity instanceof ItemStack){
+                                    ItemStack stack = (ItemStack)entity;
+                                    itemNotAddflag = ItemStackEqual(frameItem, stack);
+                                    dropItemFlag = ItemStackEqual(frameItem, stack);
+                                }
+                                if (dropItemFlag){
+                                    break;
+                                }
+                            }
+
+
+                        }
+                    }
+
                     // System.out.println("アイテムどうなった？");
                     if (!itemNotAddflag && count != -1){
                         // System.out.println(" ---> アイテム追加されてる");
@@ -209,7 +231,7 @@ class FrameListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerDropItemEvent (PlayerDropItemEvent e){
-
+        setDrop(e.getPlayer().getUniqueId(), e.getItemDrop());
     }
 
     private FrameData getData(UUID itemFlame){
