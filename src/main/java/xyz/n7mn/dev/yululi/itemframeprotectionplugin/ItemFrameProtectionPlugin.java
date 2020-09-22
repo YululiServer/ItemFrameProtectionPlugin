@@ -29,36 +29,52 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 con = DriverManager.getConnection("jdbc:mysql://" + MySQLServer + "/" + MySQLDatabase + MySQLOption, MySQLUsername, MySQLPassword);
 
                 try {
-                    con.prepareStatement("SELECT 1 FROM IFPTable LIMIT 1;").execute();
+                    PreparedStatement statement = con.prepareStatement("SELECT 1 FROM IFPTable LIMIT 1;");
+                    statement.execute();
+                    statement.close();
                 } catch (Exception e){
                     try {
-                        con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                        PreparedStatement statement = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
                                 "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
                                 "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
-                                ")").execute();
+                                ")");
+                        statement.execute();
+                        statement.close();
                     } catch (Exception ex){
-                        con.prepareStatement(" RENAME TABLE `IFPTable` TO `IFPTable_old`; ").execute();
-                        con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                        PreparedStatement statement = con.prepareStatement(" RENAME TABLE `IFPTable` TO `IFPTable_old`; ");
+                        statement.execute();
+                        statement.close();
+                        statement = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
                                 "  `CreateUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
                                 "  `ItemFrame` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
-                                ")").execute();
+                                ")");
+                        statement.execute();
+                        statement.close();
                     }
                 }
 
                 try {
-                    con.prepareStatement("SELECT 1 FROM IFPTable2 LIMIT 1;").execute();
+                    PreparedStatement statement = con.prepareStatement("SELECT 1 FROM IFPTable2 LIMIT 1;");
+                    statement.execute();
+                    statement.close();
                 } catch (Exception e){
                     try {
-                        con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                        PreparedStatement statement = con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
                                 "  `DropUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
                                 "  `ItemUUID` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
-                                ")").execute();
+                                ")");
+                        statement.execute();
+                        statement.close();
                     } catch (Exception ex){
-                        con.prepareStatement(" RENAME TABLE `IFPTable2` TO `IFPTable2_old`; ").execute();
-                        con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                        PreparedStatement statement = con.prepareStatement(" RENAME TABLE `IFPTable2` TO `IFPTable2_old`; ");
+                        statement.execute();
+                        statement.close();
+                        statement = con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
                                 "  `DropUser` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL,\n" +
                                 "  `ItemUUID` varchar(36) COLLATE utf8mb4_ja_0900_as_cs_ks NOT NULL\n" +
-                                ")").execute();
+                                ")");
+                        statement.execute();
+                        statement.close();
                     }
                 }
 
@@ -73,27 +89,45 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 ResultSet set2 = statement2.executeQuery();
 
                 if (set1.next() && set1.getInt("COUNT(*)") == 0){
-                    con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
+                    PreparedStatement statement = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
+                    statement.execute();
+                    statement.close();
                 } else {
                     try {
-                        con.prepareStatement("SELECT ItemFrame FROM IFPTable").execute();
+                        PreparedStatement statement = con.prepareStatement("SELECT ItemFrame FROM IFPTable");
+                        statement.execute();
+                        statement.close();
                     } catch (Exception e){
-                        con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old").execute();
-                        con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)").execute();
+                        PreparedStatement statement = con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old");
+                        statement.execute();
+                        statement.close();
+                        statement = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
+                        statement.execute();
+                        statement.close();
                     }
                 }
 
                 if (set2.next() && set2.getInt("COUNT(*)") == 0){
-                    con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();
+                    PreparedStatement statement = con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)");
+                    statement.execute();
+                    statement.close();
                 } else {
                     try {
-                        con.prepareStatement("SELECT ItemUUID FROM IFPTable2").execute();
+                        PreparedStatement statement = con.prepareStatement("SELECT ItemUUID FROM IFPTable2");
+                        statement.execute();
+                        statement.close();
                     } catch (Exception e){
-                        con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old").execute();
-                        con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();
+                        PreparedStatement statement = con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old");
+                        statement.execute();
+                        statement.close();
+                        statement = con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)");
+                        statement.execute();
+                        statement.close();
                     }
                 }
 
+                statement1.close();
+                statement2.close();
             }
 
             getServer().getPluginManager().registerEvents(new FrameListener(this, con),this);
@@ -116,15 +150,19 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
         if (con != null){
             new Thread(
                     () -> {
-                        try {
-                            con.close();
-                        } catch (Exception e){
-                            if (getConfig().getBoolean("errorPrint")){
-                                getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                                e.printStackTrace();
+                        boolean flag = true;
+                        while (flag){
+                            try {
+                                con.close();
+                            } catch (Exception e){
+                                if (getConfig().getBoolean("errorPrint")){
+                                    getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                                    e.printStackTrace();
+                                }
                             }
+
+                            flag = false;
                         }
-                        return;
                     }
             ).start();
         }
