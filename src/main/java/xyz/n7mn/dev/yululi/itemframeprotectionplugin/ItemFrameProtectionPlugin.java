@@ -18,7 +18,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
         try {
             saveDefaultConfig();
 
-            boolean useMySQL = false; // getConfig().getBoolean("useMySQL");
+            boolean useMySQL = getConfig().getBoolean("useMySQL");
 
             if (useMySQL){
                 final String MySQLServer = getConfig().getString("MySQLServer");
