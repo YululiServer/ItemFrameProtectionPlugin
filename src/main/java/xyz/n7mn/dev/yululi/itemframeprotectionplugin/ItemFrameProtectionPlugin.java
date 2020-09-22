@@ -62,7 +62,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                     con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();
                 } else {
                     try {
-                        con.prepareStatement("SELECT ItemJSON FROM IFPTable2").execute();
+                        con.prepareStatement("SELECT ItemUUID FROM IFPTable2").execute();
                     } catch (Exception e){
                         con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old").execute();
                         con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)").execute();

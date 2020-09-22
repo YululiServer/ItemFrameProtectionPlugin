@@ -10,8 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -168,34 +167,33 @@ class FrameListener implements Listener {
                     }
 
                     boolean dropItemFlag = false;
-                    //if (!itemNotAddflag && dropItem != null && dropPlayer != null){
-                    //    ItemStack itemStack = dropItem.getItemStack();
-
-                    //    if (player.getUniqueId().equals(dropPlayer.getUniqueId())){
-                    //        itemNotAddflag = ItemStackEqual(itemStack, frame.getItem());
-                    //        dropItemFlag = true;
-                    //    }
-                    //}
-
-
                     List<Item> dropList = getDrop(player.getUniqueId());
                     if (dropList != null && dropList.size() > 0){
                         List<World> worlds = Bukkit.getServer().getWorlds();
                         for (Item item : dropList){
 
+                            // System.out.println("チェック1");
                             for (World world : worlds){
                                 Entity entity = world.getEntity(item.getUniqueId());
-                                if (entity != null && entity.getType() == EntityType.DROPPED_ITEM && entity instanceof ItemStack){
-                                    ItemStack stack = (ItemStack)entity;
-                                    itemNotAddflag = ItemStackEqual(frameItem, stack);
-                                    dropItemFlag = ItemStackEqual(frameItem, stack);
+                                if (entity != null){
+                                    //System.out.println("チェック2 : " + entity.getType());
+                                }// else {
+                                    // System.out.println("チェック2 : null");
+                                // }
+
+                                if (entity != null && entity.getType() == EntityType.DROPPED_ITEM){
+                                    // System.out.println("うまくいってる？");
+                                    Item dropItem = (Item) entity;
+                                    dropItemFlag = ItemStackEqual(frameItem, dropItem.getItemStack());
                                 }
                                 if (dropItemFlag){
+                                    itemNotAddflag = true;
                                     break;
                                 }
                             }
-
-
+                            if (itemNotAddflag){
+                                break;
+                            }
                         }
                     }
 
@@ -232,6 +230,11 @@ class FrameListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerDropItemEvent (PlayerDropItemEvent e){
         setDrop(e.getPlayer().getUniqueId(), e.getItemDrop());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void PlayerAttemptPickupItemEvent(PlayerAttemptPickupItemEvent e){
+        setDrop(e.getPlayer().getUniqueId(), e.getItem());
     }
 
     private FrameData getData(UUID itemFlame){
