@@ -252,6 +252,7 @@ class FrameListener implements Listener {
 
                         return new FrameData(UUID.fromString(createUser), UUID.fromString(itemFrame));
                     }
+                    statement.close();
                 }
             }
         } catch (Exception e){
@@ -283,7 +284,7 @@ class FrameListener implements Listener {
                     }
                 }
             }
-
+            statement.close();
             return list;
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
@@ -297,69 +298,97 @@ class FrameListener implements Listener {
     private void setDrop(UUID dropUser, Item dropItem){
 
         Thread thread = new Thread(() -> {
-            try {
-                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE DropUser = ? AND ItemUUID = ?");
-                statement.setString(1, dropUser.toString());
-                statement.setString(2, dropItem.getUniqueId().toString());
-                ResultSet resultSet = statement.executeQuery();
-                if (resultSet.next()) {
-                    if (resultSet.getString("DropUser").length() > 0) {
-                        PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
-                        statement1.setString(1, dropUser.toString());
-                        statement1.setString(2, dropItem.getUniqueId().toString());
-                        statement1.execute();
+            boolean a = true;
+            while(a){
+                PreparedStatement statement = null;
+                PreparedStatement statement1 = null;
+                try {
+                    statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE DropUser = ? AND ItemUUID = ?");
+                    statement.setString(1, dropUser.toString());
+                    statement.setString(2, dropItem.getUniqueId().toString());
+                    ResultSet resultSet = statement.executeQuery();
+                    if (resultSet.next()) {
+                        if (resultSet.getString("DropUser").length() > 0) {
+                            statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
+                            statement1.setString(1, dropUser.toString());
+                            statement1.setString(2, dropItem.getUniqueId().toString());
+                            statement1.execute();
+                            statement1.close();
+                        } else {
+                            statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                            statement1.setString(1, dropUser.toString());
+                            statement1.setString(2, dropItem.getUniqueId().toString());
+                            statement1.execute();
+                            statement1.close();
+                        }
                     } else {
-                        PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                        statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
                         statement1.setString(1, dropUser.toString());
                         statement1.setString(2, dropItem.getUniqueId().toString());
                         statement1.execute();
+                        statement1.close();
                     }
-                } else {
-                    PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
-                    statement1.setString(1, dropUser.toString());
-                    statement1.setString(2, dropItem.getUniqueId().toString());
-                    statement1.execute();
+                    statement.close();
+                } catch (Exception e) {
+                    if (plugin.getConfig().getBoolean("errorPrint")) {
+                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
+                        e.printStackTrace();
+                    }
+                } finally {
+                    try {
+                        statement.close();
+                        statement1.close();
+                    } catch (Exception e){
+                        // e.printStackTrace();
+                    }
                 }
-                statement.close();
-            } catch (Exception e) {
-                if (plugin.getConfig().getBoolean("errorPrint")) {
-                    plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
-                    e.printStackTrace();
-                }
+                a = false;
             }
-
-            return;
         });
 
         thread.start();
+
     }
 
     private void setData(UUID createUser, UUID itemFlame){
-        new Thread(() -> {
-            try {
-                if (con != null){
-                    if (getData(itemFlame) == null){
-                        PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
-                        statement1.setString(1, createUser.toString());
-                        statement1.setString(2, itemFlame.toString());
-                        statement1.execute();
+        Thread thread = new Thread(() -> {
+            boolean a = true;
+            while(a){
+                PreparedStatement statement1 = null;
+                try {
+                    if (con != null) {
+                        if (getData(itemFlame) == null) {
+                            statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
+                            statement1.setString(1, createUser.toString());
+                            statement1.setString(2, itemFlame.toString());
+                            statement1.execute();
+                            statement1.close();
+                        } else {
+                            statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
+                            statement1.setString(1, createUser.toString());
+                            statement1.setString(2, itemFlame.toString());
+                            statement1.execute();
+                            statement1.close();
+                        }
+                    }
+                } catch (Exception e) {
+                    if (plugin.getConfig().getBoolean("errorPrint")) {
+                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
+                        e.printStackTrace();
+                    }
+                } finally {
+                    try {
                         statement1.close();
-                    } else {
-                        PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
-                        statement1.setString(1, createUser.toString());
-                        statement1.setString(2, itemFlame.toString());
-                        statement1.execute();
-                        statement1.close();
+                    } catch (Exception ex){
+                        // ex.printStackTrace();
                     }
                 }
-            } catch (Exception e) {
-                if (plugin.getConfig().getBoolean("errorPrint")){
-                    plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
-                    e.printStackTrace();
-                }
+
+                a = false;
             }
-            return;
-        }).start();
+        });
+
+        thread.start();
     }
 
 
