@@ -1,6 +1,5 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
-import com.google.gson.Gson;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -13,14 +12,19 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 class FrameListener implements Listener {
@@ -28,6 +32,7 @@ class FrameListener implements Listener {
     private final Plugin plugin;
     private final Connection con;
     private Player player = null;
+    private boolean runflag = false;
 
     public FrameListener(Plugin plugin, Connection con){
         this.plugin = plugin;
@@ -247,17 +252,52 @@ class FrameListener implements Listener {
         }
     }
 
-
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void PlayerDropItemEvent (PlayerDropItemEvent e){
+        BukkitRunnable bukkitRunnable = new BukkitRunnable() {
+            @Override
+            public void run() {
 
-        setDrop(e.getPlayer().getUniqueId(), e.getItemDrop());
+                try {
+                    PreparedStatement statement = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                    statement.setString(1, e.getPlayer().getUniqueId().toString());
+                    statement.setString(2, e.getItemDrop().getUniqueId().toString());
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException ex) {
+                    if (plugin.getConfig().getBoolean("errorPrint")) {
+                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        };
+        bukkitRunnable.runTaskLaterAsynchronously(plugin, 10L);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void PlayerAttemptPickupItemEvent(PlayerAttemptPickupItemEvent e){
-        setDrop(e.getPlayer().getUniqueId(), e.getItem());
+        BukkitRunnable bukkitRunnable = new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    PreparedStatement statement = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
+                    statement.setString(1, e.getPlayer().getUniqueId().toString());
+                    statement.setString(2, e.getItem().getUniqueId().toString());
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException ex) {
+                    if (plugin.getConfig().getBoolean("errorPrint")) {
+                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        };
+        bukkitRunnable.runTaskLaterAsynchronously(plugin, 10L);
     }
+
+
 
     private FrameData getData(UUID itemFlame){
         FrameData data = null;
@@ -265,7 +305,7 @@ class FrameListener implements Listener {
         try {
             if (con != null){
                 if (!con.isClosed()){
-                    PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable WHERE ItemFrame = ?");
+                    PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE ItemFrame = ?");
                     statement.setString(1, itemFlame.toString());
                     ResultSet resultSet = statement.executeQuery();
                     if (resultSet.next()){
@@ -317,59 +357,6 @@ class FrameListener implements Listener {
         }
     }
 
-    private void setDrop(UUID dropUser, Item dropItem){
-
-        Thread thread = new Thread(() -> {
-            boolean a = true;
-            while(a){
-                PreparedStatement statement = null;
-                PreparedStatement statement1 = null;
-                try {
-                    statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE DropUser = ? AND ItemUUID = ?");
-                    statement.setString(1, dropUser.toString());
-                    statement.setString(2, dropItem.getUniqueId().toString());
-                    ResultSet resultSet = statement.executeQuery();
-                    statement.close();
-                    if (resultSet.next()) {
-
-                        if (resultSet.getString("DropUser").length() > 0) {
-                            statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
-                        } else {
-                            statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
-                        }
-                        statement1.setString(1, dropUser.toString());
-                        statement1.setString(2, dropItem.getUniqueId().toString());
-                        statement1.execute();
-                        statement1.close();
-
-                    } else {
-                        statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
-                        statement1.setString(1, dropUser.toString());
-                        statement1.setString(2, dropItem.getUniqueId().toString());
-                        statement1.execute();
-                        statement1.close();
-                    }
-
-                } catch (Exception e) {
-                    if (plugin.getConfig().getBoolean("errorPrint")) {
-                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
-                        e.printStackTrace();
-                    }
-                } finally {
-                    try {
-                        statement.close();
-                        statement1.close();
-                    } catch (Exception e){
-                        // e.printStackTrace();
-                    }
-                }
-                a = false;
-            }
-        });
-
-        thread.start();
-
-    }
 
     private void setData(UUID createUser, UUID itemFlame){
         Thread thread = new Thread(() -> {

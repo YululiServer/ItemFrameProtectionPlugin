@@ -2,10 +2,13 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 class ItemFrameCommand implements CommandExecutor {
@@ -15,6 +18,7 @@ class ItemFrameCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
+        /*
         Thread thread = new Thread(() -> {
             boolean flag = true;
             while (flag){
@@ -49,6 +53,17 @@ class ItemFrameCommand implements CommandExecutor {
         });
 
         thread.start();
+         */
+        if (sender instanceof Player && args.length == 1){
+            Player player = (Player) sender;
+            Location location = player.getLocation();
+            location.setY(location.getBlockY() - 1);
+
+            for (int i = 0; i < Integer.parseInt(args[0]); i++){
+                location.getWorld().dropItem(location, new ItemStack(Material.SAND));
+            }
+        }
+
         return true;
     }
 }
