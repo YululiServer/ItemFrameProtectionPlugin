@@ -78,9 +78,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
         // Plugin shutdown logic
         if (con != null){
             try {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
+                new Thread(() -> {
                         try {
                             con.close();
                             bukkitTask.cancel();
@@ -88,7 +86,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                             // e.printStackTrace();
                         }
                     }
-                }.runTaskLaterAsynchronously(this, 0L);
+                ).start();
             } catch (Exception e){
                 if (getConfig().getBoolean("errorPrint")) {
                     getLogger().info(ChatColor.RED + "エラーを検知しました。");
