@@ -1,5 +1,6 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
+import jdk.nashorn.internal.ir.IfNode;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -30,13 +31,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class FrameListener implements Listener {
 
     private final Plugin plugin;
-    private final Connection con;
-    private Player player = null;
-    private boolean runflag = false;
+    private ItemFrameData ItemFrameData;
 
-    public FrameListener(Plugin plugin, Connection con){
+    public FrameListener(Plugin plugin, ItemFrameData itemFrameData){
         this.plugin = plugin;
-        this.con = con;
+        this.ItemFrameData = itemFrameData;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -51,7 +50,7 @@ class FrameListener implements Listener {
         try {
             final Player player = e.getPlayer();
             final Entity rightClicked = e.getRightClicked();
-            final FrameData data = getData(rightClicked.getUniqueId());
+            final FrameData data = ItemFrameData.getItemFrame(e.getPlayer().getUniqueId(), e.getRightClicked().getUniqueId());
 
             // 保護してない
             if (data == null && rightClicked instanceof ItemFrame){
@@ -60,7 +59,10 @@ class FrameListener implements Listener {
                     if (frame.getItem().getType() == Material.AIR){
                         frame.setItem(player.getInventory().getItemInMainHand());
                     }
-                    setData(player.getUniqueId(), rightClicked.getUniqueId());
+                    // setData(player.getUniqueId(), rightClicked.getUniqueId());
+                    FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
+                    ItemFrameData.addFrameList(frameData);
+
                     player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スネークしながら右クリックで保護を解除できます。");
                     e.setCancelled(true);
                 } else {
@@ -81,7 +83,9 @@ class FrameListener implements Listener {
                 // 保護してる
                 if (player.isSneaking()){
                     if (data.getCreateUser().equals(player.getUniqueId()) || player.hasPermission("ifp.op")){
-                        setData(data.getCreateUser(), data.getItemFrame());
+                        FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
+                        ItemFrameData.delFrameList(frameData);
+
                         player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スネークしながら右クリックで再度保護できます。");
                     } else {
                         player.sendMessage(ChatColor.GREEN + "この額縁は保護されています。");
@@ -106,15 +110,13 @@ class FrameListener implements Listener {
 
         // 額縁壊されるとき
         try {
-            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
+            if (e.getEntity() instanceof ItemFrame && ItemFrameData.getItemFrame(e.getEntity().getUniqueId()) == null){
                 ItemFrame frame = (ItemFrame) e.getEntity();
                 if (frame.getItem().getType() != Material.AIR){
-
-                    // frame.getLocation().getWorld().dropItem(frame.getLocation(), frame.getItem());
                     ItemStack stack = new ItemStack(Material.AIR);
                     frame.setItem(stack);
                 }
-            } else if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null) {
+            } else if (e.getEntity() instanceof ItemFrame && ItemFrameData.getItemFrame(e.getEntity().getUniqueId()) != null) {
                 e.setCancelled(true);
             }
         } catch (Exception ex){
@@ -134,7 +136,7 @@ class FrameListener implements Listener {
 
         // 額縁の中身消されたとき
         try {
-            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null) {
+            if (e.getEntity() instanceof ItemFrame && ItemFrameData.getItemFrame(e.getEntity().getUniqueId()) == null) {
                 ItemFrame frame = (ItemFrame) e.getEntity();
                 if (frame.getItem().getType() != Material.AIR){
                     ItemStack stack = new ItemStack(Material.AIR);
@@ -142,7 +144,7 @@ class FrameListener implements Listener {
                     e.setCancelled(true);
                 }
             }
-            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null){
+            if (e.getEntity() instanceof ItemFrame && ItemFrameData.getItemFrame(e.getEntity().getUniqueId()) != null){
                 e.setCancelled(true);
             }
         } catch (Exception ex){
@@ -165,7 +167,7 @@ class FrameListener implements Listener {
         // System.out.println("【速報】プラグイン、イベントが発生したことを検知する。");
         if (damager instanceof Player){
             // System.out.println("【速報】プラグイン、人が殴ったことを認める。");
-            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) == null){
+            if (e.getEntity() instanceof ItemFrame && ItemFrameData.getItemFrame(e.getEntity().getUniqueId()) == null){
                 // System.out.println("【速報】プラグイン、ロックされてないやつ　かつ　額縁だったことを認める。");
                 ItemFrame frame = (ItemFrame) e.getEntity();
                 if (frame.getItem().getType() != Material.AIR){
@@ -193,14 +195,14 @@ class FrameListener implements Listener {
                     }
 
                     boolean dropItemFlag = false;
-                    List<Item> dropList = getDrop(player.getUniqueId());
+                    List<DropData> dropList = ItemFrameData.getDropDataByUser(player.getUniqueId());
                     if (dropList != null && dropList.size() > 0){
                         List<World> worlds = Bukkit.getServer().getWorlds();
-                        for (Item item : dropList){
+                        for (DropData item : dropList){
 
                             // System.out.println("チェック1");
                             for (World world : worlds){
-                                Entity entity = world.getEntity(item.getUniqueId());
+                                Entity entity = world.getEntity(item.getItemUUID());
                                 if (entity != null){
                                     //System.out.println("チェック2 : " + entity.getType());
                                 }// else {
@@ -245,165 +247,24 @@ class FrameListener implements Listener {
                     e.setCancelled(true);
                 }
             }
-            if (e.getEntity() instanceof ItemFrame && getData(e.getEntity().getUniqueId()) != null){
+            if (e.getEntity() instanceof ItemFrame && ItemFrameData.getItemFrame(e.getEntity().getUniqueId()) != null){
                 // System.out.println("【速報】プラグイン、ロックされてるのは無条件キャンセルとの発表");
                 e.setCancelled(true);
             }
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerDropItemEvent (PlayerDropItemEvent e){
-        BukkitRunnable bukkitRunnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-
-                try {
-                    PreparedStatement statement = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
-                    statement.setString(1, e.getPlayer().getUniqueId().toString());
-                    statement.setString(2, e.getItemDrop().getUniqueId().toString());
-                    statement.execute();
-                    statement.close();
-                } catch (SQLException ex) {
-                    if (plugin.getConfig().getBoolean("errorPrint")) {
-                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        };
-        bukkitRunnable.runTaskLaterAsynchronously(plugin, 10L);
+        DropData data = new DropData(e.getPlayer().getUniqueId(), e.getItemDrop().getUniqueId());
+        ItemFrameData.addDropList(data);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerAttemptPickupItemEvent(PlayerAttemptPickupItemEvent e){
-        BukkitRunnable bukkitRunnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    PreparedStatement statement = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
-                    statement.setString(1, e.getPlayer().getUniqueId().toString());
-                    statement.setString(2, e.getItem().getUniqueId().toString());
-                    statement.execute();
-                    statement.close();
-                } catch (SQLException ex) {
-                    if (plugin.getConfig().getBoolean("errorPrint")) {
-                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        };
-        bukkitRunnable.runTaskLaterAsynchronously(plugin, 10L);
+        DropData data = new DropData(e.getPlayer().getUniqueId(), e.getItem().getUniqueId());
+        ItemFrameData.delDropList(data);
     }
-
-
-
-    private FrameData getData(UUID itemFlame){
-        FrameData data = null;
-
-        try {
-            if (con != null){
-                if (!con.isClosed()){
-                    PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE ItemFrame = ?");
-                    statement.setString(1, itemFlame.toString());
-                    ResultSet resultSet = statement.executeQuery();
-                    if (resultSet.next()){
-                        String createUser = resultSet.getString("CreateUser");
-                        String itemFrame = resultSet.getString("ItemFrame");
-
-                        return new FrameData(UUID.fromString(createUser), UUID.fromString(itemFrame));
-                    }
-                    statement.close();
-                }
-            }
-        } catch (Exception e){
-            if (plugin.getConfig().getBoolean("errorPrint")){
-                plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        return data;
-    }
-
-    private List<Item> getDrop(UUID dropUser){
-        try {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable2 WHERE DropUser = ?");
-            statement.setString(1, dropUser.toString());
-            ResultSet resultSet = statement.executeQuery();
-
-            List<Item> list = new ArrayList<>();
-            while (resultSet.next()){
-                List<World> worlds = Bukkit.getServer().getWorlds();
-                for (World world : worlds){
-                    Entity entity = world.getEntity(UUID.fromString(resultSet.getString("ItemUUID")));
-                    if (entity != null){
-                        if (entity.getType() == EntityType.DROPPED_ITEM){
-                            list.add((Item) entity);
-                        }
-                    }
-                }
-            }
-            statement.close();
-            return list;
-        } catch (Exception e){
-            if (plugin.getConfig().getBoolean("errorPrint")){
-                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                e.printStackTrace();
-            }
-            return null;
-        }
-    }
-
-
-    private void setData(UUID createUser, UUID itemFlame){
-        Thread thread = new Thread(() -> {
-            boolean a = true;
-            while(a){
-                PreparedStatement statement = null;
-                PreparedStatement statement1 = null;
-                try {
-                    if (con != null) {
-
-                        statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable WHERE ItemFrame = ?");
-                        statement.setString(1, itemFlame.toString());
-                        ResultSet resultSet = statement.executeQuery();
-                        if (resultSet.next()){
-                            if (resultSet.getInt("COUNT(*)") == 0) {
-                                statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
-                            } else {
-                                statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
-                            }
-                            statement1.setString(1, createUser.toString());
-                            statement1.setString(2, itemFlame.toString());
-
-                            statement1.execute();
-                            statement1.close();
-                        }
-                        statement.close();
-                    }
-                } catch (Exception e) {
-                    if (plugin.getConfig().getBoolean("errorPrint")) {
-                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
-                        e.printStackTrace();
-                    }
-                } finally {
-                    try {
-                        statement1.close();
-                    } catch (Exception ex){
-                        // ex.printStackTrace();
-                    }
-                }
-
-                a = false;
-            }
-        });
-
-        thread.start();
-    }
-
 
     private boolean ItemStackEqual(ItemStack item1, ItemStack item2){
 
@@ -429,9 +290,6 @@ class FrameListener implements Listener {
             }
 
         }
-
-
         return false;
-
     }
 }

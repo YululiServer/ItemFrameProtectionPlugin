@@ -1,92 +1,84 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
+import org.bukkit.event.Cancellable;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.UUID;
 
-class ItemFrameTimer extends BukkitRunnable {
+class ItemFrameTimer extends BukkitRunnable implements Cancellable {
 
     private final Plugin plugin;
     private final Connection con;
+    private boolean flag = false;
+    private final ItemFrameData data;
 
-    public ItemFrameTimer(Plugin plugin, Connection con){
+    public ItemFrameTimer(Plugin plugin, Connection con, ItemFrameData data){
         this.plugin = plugin;
         this.con = con;
+        this.data = data;
     }
 
     @Override
     public void run() {
+        if (!flag){
 
-        new Thread(()->{
-            // System.out.println("Timer run");
+            if (con != null){
+                try {
+                    final PreparedStatement statement1;
+                    final PreparedStatement statement2;
+                    if (plugin.getConfig().getBoolean("useMySQL")){
+                        statement1 = con.prepareStatement("TRUNCATE IFPTable;");
+                        statement2 = con.prepareStatement("TRUNCATE IFPTable2;");
+                    } else {
+                        statement1 = con.prepareStatement("DELETE FROM IFPTable;");
+                        statement2 = con.prepareStatement("DELETE FROM IFPTable2;");
+                    }
+                    statement1.execute();
+                    statement1.close();
+                    statement2.execute();
+                    statement2.close();
 
-            try {
-                if (con != null){
-
-                    PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable");
-                    List<FrameData> data = new ArrayList<>();
-                    ResultSet set = statement.executeQuery();
-
-                    while (set.next()){
-                        FrameData frameData = new FrameData(UUID.fromString(set.getString("CreateUser")), UUID.fromString(set.getString("ItemFrame")));
-                        data.add(frameData);
+                    List<FrameData> itemFrameList = data.getItemFrameList();
+                    for (FrameData data : itemFrameList){
+                        PreparedStatement statement3 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
+                        statement3.setString(1, data.getCreateUser().toString());
+                        statement3.setString(2, data.getItemFrame().toString());
+                        statement3.execute();
+                        statement3.close();
                     }
 
-                    if (data.size() > 0){
-                        for (FrameData temp : data){
-                            final List<World> worlds = Bukkit.getServer().getWorlds();
-                            boolean flag = false;
-                            for (World world : worlds){
-                                final List<Entity> entities = world.getEntities();
-                                if (entities.size() == 0){
-                                    break;
-                                }
-                                // System.out.println("entities : " + entities.size());
-                                for (Entity entity : entities){
-                                    if (entity.getUniqueId().equals(temp.getItemFrame())){
-                                        flag = true;
-                                        break;
-                                    }
-                                }
-                                if (flag){
-                                    break;
-                                }
-                            }
-                            if (!flag){
-
-                                Entity entity = Bukkit.getEntity(temp.getItemFrame());
-                                if (entity == null){
-                                    PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
-                                    statement1.setString(1, temp.getCreateUser().toString());
-                                    statement1.setString(2, temp.getItemFrame().toString());
-                                    statement1.execute();
-                                    statement1.close();
-                                }
-                            }
-                        }
+                    List<DropData> dropList = data.getDropList();
+                    for (DropData data : dropList){
+                        PreparedStatement statement4 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                        statement4.setString(1, data.getDropUser().toString());
+                        statement4.setString(2, data.getItemUUID().toString());
+                        statement4.execute();
+                        statement4.close();
                     }
-
-                    statement.close();
-                    new ItemFrameTimer(plugin, con).runTaskLaterAsynchronously(plugin, 120L);
-                }
-            } catch (Exception e){
-                if (plugin.getConfig().getBoolean("errorPrint")){
-                    plugin.getLogger().info(ChatColor.RED + "エラーを検知しました");
-                    e.printStackTrace();
+                } catch (SQLException e){
+                    if (plugin.getConfig().getBoolean("errorPrint")) {
+                        plugin.getLogger().info(ChatColor.RED + "SQLエラーを検知しました。");
+                        e.printStackTrace();
+                    }
                 }
             }
-            return;
-        }).start();
 
+
+            new ItemFrameTimer(plugin, con, data).runTaskLaterAsynchronously(plugin, 120L);
+        }
+    }
+
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.flag = cancel;
+    }
+
+    public boolean isCancelled(){
+        return this.flag;
     }
 }
