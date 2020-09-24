@@ -54,7 +54,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new FrameListener(this, data), this);
 
             bukkitTask = new ItemFrameTimer(this, con, data).runTaskLaterAsynchronously(this, 120L);
-
+            new ItemFrameAutoDeleteTimer(this, data).runTaskLaterAsynchronously(this, 0L);
 
         } catch (Exception e){
             try {

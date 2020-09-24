@@ -23,9 +23,9 @@ class ItemFrameData {
     }
 
     public FrameData getItemFrame(UUID createUser, UUID itemFrame){
-        for (int i = 0; i < frameList.size(); i++){
-            if (frameList.get(i).getCreateUser().equals(createUser) && frameList.get(i).getItemFrame().equals(itemFrame)){
-                return frameList.get(i);
+        for (FrameData frameData : frameList) {
+            if (frameData.getCreateUser().equals(createUser) && frameData.getItemFrame().equals(itemFrame)) {
+                return frameData;
             }
         }
 
@@ -33,9 +33,9 @@ class ItemFrameData {
     }
 
     public FrameData getItemFrame(UUID itemFrame){
-        for (int i = 0; i < frameList.size(); i++){
-            if (frameList.get(i).getItemFrame().equals(itemFrame)){
-                return frameList.get(i);
+        for (FrameData frameData : frameList) {
+            if (frameData.getItemFrame().equals(itemFrame)) {
+                return frameData;
             }
         }
 
@@ -52,9 +52,11 @@ class ItemFrameData {
             public void run() {
                 int i = 0;
                 while (true){
-                    if (frameList.get(i).getCreateUser().equals(data.getCreateUser()) && frameList.get(i).getItemFrame().equals(data.getItemFrame())){
-                        frameList.remove(i);
-                        break;
+                    if (frameList.size() > 0){
+                        if (frameList.get(i).getCreateUser().equals(data.getCreateUser()) && frameList.get(i).getItemFrame().equals(data.getItemFrame())){
+                            frameList.remove(i);
+                            break;
+                        }
                     }
                     i++;
                 }
@@ -67,9 +69,9 @@ class ItemFrameData {
     }
 
     public DropData getDropDataByItem(UUID dropItem){
-        for (int i = 0; i < dropList.size(); i++){
-            if (dropList.get(i).getItemUUID().equals(dropItem)){
-                return dropList.get(i);
+        for (DropData dropData : dropList) {
+            if (dropData.getItemUUID().equals(dropItem)) {
+                return dropData;
             }
         }
 
@@ -79,9 +81,9 @@ class ItemFrameData {
     public List<DropData> getDropDataByUser(UUID dropUser){
 
         List<DropData> data = new ArrayList<>();
-        for (int i = 0; i < dropList.size(); i++){
-            if (dropList.get(i).getDropUser().equals(dropUser)){
-                data.add(dropList.get(i));
+        for (DropData dropData : dropList) {
+            if (dropData.getDropUser().equals(dropUser)) {
+                data.add(dropData);
             }
         }
 
@@ -98,9 +100,11 @@ class ItemFrameData {
             public void run() {
                 int i = 0;
                 while (true){
-                    if (dropList.get(i).getDropUser().equals(data.getDropUser()) && dropList.get(i).getItemUUID().equals(data.getItemUUID())){
-                        dropList.remove(i);
-                        break;
+                    if (dropList.size() > 0){
+                        if (dropList.get(i).getDropUser().equals(data.getDropUser()) && dropList.get(i).getItemUUID().equals(data.getItemUUID())){
+                            dropList.remove(i);
+                            break;
+                        }
                     }
                     i++;
                 }
