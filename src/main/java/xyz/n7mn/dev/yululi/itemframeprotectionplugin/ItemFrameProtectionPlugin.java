@@ -46,8 +46,6 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 FrameData frameData = new FrameData(UUID.fromString(createUser), UUID.fromString(itemFrame));
                 data.addFrameList(frameData);
             }
-
-            resultSet.close();
             statement.close();
 
             getServer().getPluginManager().registerEvents(new FrameListener(this, data), this);
