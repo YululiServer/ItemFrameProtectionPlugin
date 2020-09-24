@@ -96,8 +96,8 @@ class ItemFrameTimer extends BukkitRunnable implements Cancellable {
                             FrameData itemFrame = data.getItemFrame(UUID.fromString(set2.getString("DropUser")), UUID.fromString(set2.getString("ItemUUID")));
                             if (itemFrame == null){
                                 PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
-                                statement1.setString(1, set.getString("DropUser"));
-                                statement1.setString(2, set.getString("ItemUUID"));
+                                statement1.setString(1, set2.getString("DropUser"));
+                                statement1.setString(2, set2.getString("ItemUUID"));
                                 statement1.execute();
                                 statement1.close();
                             }

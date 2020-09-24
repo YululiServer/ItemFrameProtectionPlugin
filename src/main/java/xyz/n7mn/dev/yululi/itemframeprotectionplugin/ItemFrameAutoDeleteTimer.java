@@ -37,7 +37,6 @@ class ItemFrameAutoDeleteTimer extends BukkitRunnable {
         }
 
         List<DropData> dropList = dataAPI.getDropList();
-
         for (DropData drop : dropList){
             final List<World> worlds = Bukkit.getServer().getWorlds();
             for (World world : worlds){

@@ -71,6 +71,9 @@ class ItemFrameData {
     }
 
     public List<DropData> getDropList(){
+        if (dropList == null){
+            return new ArrayList<>();
+        }
         return dropList;
     }
 
@@ -105,20 +108,25 @@ class ItemFrameData {
             @Override
             public void run() {
                 int i = 0;
+                int count = -1;
                 while (true){
                     if (dropList.size() < 1){
                         break;
                     }
 
                     if (i < dropList.size()){
-                        if (dropList.get(i).getDropUser().equals(data.getDropUser()) && dropList.get(i).getItemUUID().equals(data.getItemUUID())){
-                            dropList.remove(i);
+                        if (dropList.get(i) != null && dropList.get(i).getDropUser() != null && dropList.get(i).getItemUUID() != null && dropList.get(i).getDropUser().equals(data.getDropUser()) && dropList.get(i).getItemUUID().equals(data.getItemUUID())){
+                            count = i;
                             break;
                         }
                     } else {
                         break;
                     }
                     i++;
+                }
+
+                if (count != -1){
+                    dropList.remove(count);
                 }
             }
         }.runTaskLaterAsynchronously(plugin, 0L);
