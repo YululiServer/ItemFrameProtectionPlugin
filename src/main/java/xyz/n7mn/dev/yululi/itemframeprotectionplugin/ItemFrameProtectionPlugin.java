@@ -2,7 +2,6 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.*;

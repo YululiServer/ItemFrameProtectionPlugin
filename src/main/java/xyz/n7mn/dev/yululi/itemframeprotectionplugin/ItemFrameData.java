@@ -52,11 +52,17 @@ class ItemFrameData {
             public void run() {
                 int i = 0;
                 while (true){
-                    if (frameList.size() > 0){
+                    if (frameList.size() < 1){
+                        break;
+                    }
+
+                    if (i < frameList.size()){
                         if (frameList.get(i).getCreateUser().equals(data.getCreateUser()) && frameList.get(i).getItemFrame().equals(data.getItemFrame())){
                             frameList.remove(i);
                             break;
                         }
+                    } else {
+                        break;
                     }
                     i++;
                 }
@@ -100,11 +106,17 @@ class ItemFrameData {
             public void run() {
                 int i = 0;
                 while (true){
-                    if (dropList.size() > 0){
+                    if (dropList.size() < 1){
+                        break;
+                    }
+
+                    if (i < dropList.size()){
                         if (dropList.get(i).getDropUser().equals(data.getDropUser()) && dropList.get(i).getItemUUID().equals(data.getItemUUID())){
                             dropList.remove(i);
                             break;
                         }
+                    } else {
+                        break;
                     }
                     i++;
                 }

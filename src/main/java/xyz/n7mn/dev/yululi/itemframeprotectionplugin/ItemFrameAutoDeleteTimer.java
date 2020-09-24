@@ -3,7 +3,6 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -26,6 +25,10 @@ class ItemFrameAutoDeleteTimer extends BukkitRunnable {
         for (FrameData data : itemFrameList){
             final List<World> worlds = Bukkit.getServer().getWorlds();
             for (World world : worlds){
+                if (world.getEntities().size() == 0){
+                    continue;
+                }
+
                 Entity entity = world.getEntity(data.getItemFrame());
                 if (entity == null){
                     dataAPI.delFrameList(data);
@@ -38,6 +41,10 @@ class ItemFrameAutoDeleteTimer extends BukkitRunnable {
         for (DropData drop : dropList){
             final List<World> worlds = Bukkit.getServer().getWorlds();
             for (World world : worlds){
+                if (world.getEntities().size() == 0){
+                    continue;
+                }
+
                 Entity entity = world.getEntity(drop.getItemUUID());
                 if (entity == null){
                     dataAPI.delDropList(drop);
