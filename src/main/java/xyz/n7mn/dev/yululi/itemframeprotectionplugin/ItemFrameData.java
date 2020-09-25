@@ -60,22 +60,13 @@ class ItemFrameData {
         new BukkitRunnable() {
             @Override
             public void run() {
-                int i = 0;
+                System.out.println("!!");
                 synchronized(frameList) {
-                    while (true){
-                        if (frameList.size() < 1){
+                    for (int i = 0; i < frameList.size(); i++){
+                        if (frameList.get(i).getCreateUser().equals(data.getCreateUser()) && frameList.get(i).getItemFrame().equals(data.getItemFrame())){
+                            frameList.remove(i);
                             break;
                         }
-
-                        if (i < frameList.size()){
-                            if (frameList.get(i).getCreateUser().equals(data.getCreateUser()) && frameList.get(i).getItemFrame().equals(data.getItemFrame())){
-                                frameList.remove(i);
-                                break;
-                            }
-                        } else {
-                            break;
-                        }
-                        i++;
                     }
                 }
 

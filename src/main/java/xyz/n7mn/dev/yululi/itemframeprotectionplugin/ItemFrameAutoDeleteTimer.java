@@ -22,19 +22,36 @@ class ItemFrameAutoDeleteTimer extends BukkitRunnable {
     public void run() {
         List<FrameData> itemFrameList = dataAPI.getItemFrameList();
 
-        for (FrameData data : itemFrameList){
-            final List<World> worlds = Bukkit.getServer().getWorlds();
-            for (World world : worlds){
-                if (world.getEntities().size() == 0){
-                    continue;
+        // System.out.println("Debug : "+ itemFrameList.size());
+        synchronized(itemFrameList) {
+            for (FrameData data : itemFrameList){
+                boolean flag = false;
+                final List<World> worlds = Bukkit.getServer().getWorlds();
+                for (World world : worlds){
+                    if (world.getEntities().size() == 0){
+                        flag = true;
+                        break;
+                    }
+
+                    for (Entity entity : world.getEntities()){
+                        if (entity != null){
+                            flag = true;
+                            break;
+                        }
+                    }
+
+                    if (flag){
+                        break;
+                    }
                 }
 
-                Entity entity = world.getEntity(data.getItemFrame());
-                if (entity == null){
+                if (!flag){
                     dataAPI.delFrameList(data);
                 }
             }
         }
+
+        // System.out.println("Debug : "+ itemFrameList.size());
 
 
         List<DropData> dropList = dataAPI.getDropList();
@@ -43,7 +60,7 @@ class ItemFrameAutoDeleteTimer extends BukkitRunnable {
                 final List<World> worlds = Bukkit.getServer().getWorlds();
                 for (World world : worlds){
                     if (world.getEntities().size() == 0){
-                        continue;
+                        break;
                     }
 
                     Entity entity = world.getEntity(drop.getItemUUID());
