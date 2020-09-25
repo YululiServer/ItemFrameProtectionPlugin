@@ -41,7 +41,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                     try {
                         PreparedStatement statement = con.prepareStatement("SELECT ItemFrame FROM IFPTable");
                         ResultSet resultSet = statement.executeQuery();
-                        if (!resultSet.next()){
+                        if (resultSet.next() && resultSet.getString("ItemFrame").length() == 0){
                             statement.close();
                             throw new SQLException();
                         }
