@@ -73,6 +73,7 @@ class FrameListener implements Listener {
                 if (player.isSneaking()){
                     if (data.getCreateUser().equals(player.getUniqueId()) || player.hasPermission("ifp.op")){
                         FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
+                        System.out.println("! : " + player.getUniqueId());
                         ItemFrameData.delFrameList(frameData);
 
                         player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スネークしながら右クリックで再度保護できます。");

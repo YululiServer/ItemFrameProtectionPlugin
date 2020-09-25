@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 class ItemFrameCommand implements CommandExecutor {
 
@@ -18,10 +19,10 @@ class ItemFrameCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        /*
-        Thread thread = new Thread(() -> {
-            boolean flag = true;
-            while (flag){
+        new BukkitRunnable(){
+
+            @Override
+            public void run() {
                 try {
                     if (args.length == 0 && sender instanceof Player) {
                         Player player = (Player) sender;
@@ -47,22 +48,8 @@ class ItemFrameCommand implements CommandExecutor {
                         e.printStackTrace();
                     }
                 }
-
-                flag = false;
             }
-        });
-
-        thread.start();
-         */
-        if (sender instanceof Player && args.length == 1){
-            Player player = (Player) sender;
-            Location location = player.getLocation();
-            location.setY(location.getBlockY() - 1);
-
-            for (int i = 0; i < Integer.parseInt(args[0]); i++){
-                location.getWorld().dropItem(location, new ItemStack(Material.SAND));
-            }
-        }
+        }.runTaskLaterAsynchronously(plugin, 0L);
 
         return true;
     }

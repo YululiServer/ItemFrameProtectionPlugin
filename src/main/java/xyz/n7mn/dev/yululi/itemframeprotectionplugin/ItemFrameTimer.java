@@ -51,6 +51,7 @@ class ItemFrameTimer extends BukkitRunnable implements Cancellable {
                             }
                         }
                     }
+                    // System.out.println("Debug : LockFrame : " + itemFrameList.size());
 
 
                     List<DropData> dropList = data.getDropList();

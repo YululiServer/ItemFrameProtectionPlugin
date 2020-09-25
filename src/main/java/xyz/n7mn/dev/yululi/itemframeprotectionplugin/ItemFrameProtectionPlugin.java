@@ -109,13 +109,18 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                         }
                         statement.close();
                     } catch (SQLException ex){
-                        PreparedStatement statement1 = con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old;");
-                        statement1.execute();
-                        statement1.close();
+                        try {
+                            PreparedStatement statement1 = con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old;");
+                            statement1.execute();
+                            statement1.close();
 
-                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
-                        statement2.execute();
-                        statement2.close();
+                            PreparedStatement statement2 = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
+                            statement2.execute();
+                            statement2.close();
+                        } catch (SQLException exc){
+                        // exc.printStackTrace();
+                        }
+
                     }
 
                 }
@@ -128,19 +133,23 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                     try {
                         PreparedStatement statement = con.prepareStatement("SELECT ItemUUID FROM IFPTable2");
                         ResultSet set = statement.executeQuery();
-                        if (!set.next()){
+                        if (set.next() && set.getString("ItemUUID").length() == 0){
                             statement.close();
                             throw new SQLException();
                         }
                         statement.close();
                     } catch (SQLException ex){
-                        PreparedStatement statement1 = con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old;");
-                        statement1.execute();
-                        statement1.close();
+                        try {
+                            PreparedStatement statement1 = con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old;");
+                            statement1.execute();
+                            statement1.close();
 
-                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)");
-                        statement2.execute();
-                        statement2.close();
+                            PreparedStatement statement2 = con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)");
+                            statement2.execute();
+                            statement2.close();
+                        } catch (SQLException exc){
+                            // exc.printStackTrace();
+                        }
                     }
 
                 }
@@ -163,6 +172,10 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
             bukkitTask = new ItemFrameTimer(this, con, data).runTaskLaterAsynchronously(this, 120L);
             new ItemFrameAutoDeleteTimer(this, data).runTaskLaterAsynchronously(this, 0L);
+
+            getCommand("ifp").setExecutor(new ItemFrameCommand());
+
+            getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 
         } catch (Exception e){
             try {
