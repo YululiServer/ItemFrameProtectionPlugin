@@ -36,20 +36,24 @@ class ItemFrameAutoDeleteTimer extends BukkitRunnable {
             }
         }
 
-        List<DropData> dropList = dataAPI.getDropList();
-        for (DropData drop : dropList){
-            final List<World> worlds = Bukkit.getServer().getWorlds();
-            for (World world : worlds){
-                if (world.getEntities().size() == 0){
-                    continue;
-                }
 
-                Entity entity = world.getEntity(drop.getItemUUID());
-                if (entity == null){
-                    dataAPI.delDropList(drop);
+        List<DropData> dropList = dataAPI.getDropList();
+        synchronized(dropList) {
+            for (DropData drop : dropList){
+                final List<World> worlds = Bukkit.getServer().getWorlds();
+                for (World world : worlds){
+                    if (world.getEntities().size() == 0){
+                        continue;
+                    }
+
+                    Entity entity = world.getEntity(drop.getItemUUID());
+                    if (entity == null){
+                        dataAPI.delDropList(drop);
+                    }
                 }
             }
         }
+
 
         new ItemFrameAutoDeleteTimer(plugin, dataAPI).runTaskLaterAsynchronously(plugin, 200L);
     }

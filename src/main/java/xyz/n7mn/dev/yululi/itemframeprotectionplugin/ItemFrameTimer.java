@@ -34,39 +34,45 @@ class ItemFrameTimer extends BukkitRunnable implements Cancellable {
                 try {
                     List<FrameData> itemFrameList = data.getItemFrameList();
                     // System.out.println("Debug : LockFrame : " + itemFrameList.size());
-                    for (FrameData data : itemFrameList){
-                        PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable WHERE ItemFrame = ?");
-                        statement.setString(1, data.getItemFrame().toString());
-                        ResultSet set = statement.executeQuery();
-                        if (set.next()){
-                            if (set.getInt("COUNT(*)") == 0){
-                                statement.close();
-                                PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
-                                statement1.setString(1, data.getCreateUser().toString());
-                                statement1.setString(2, data.getItemFrame().toString());
-                                statement1.execute();
-                                statement1.close();
+                    synchronized(itemFrameList) {
+                        for (FrameData data : itemFrameList){
+                            PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable WHERE ItemFrame = ?");
+                            statement.setString(1, data.getItemFrame().toString());
+                            ResultSet set = statement.executeQuery();
+                            if (set.next()){
+                                if (set.getInt("COUNT(*)") == 0){
+                                    statement.close();
+                                    PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
+                                    statement1.setString(1, data.getCreateUser().toString());
+                                    statement1.setString(2, data.getItemFrame().toString());
+                                    statement1.execute();
+                                    statement1.close();
+                                }
                             }
                         }
                     }
 
+
                     List<DropData> dropList = data.getDropList();
                     // System.out.println("Debug : dropItem : " + dropList.size());
-                    for (DropData data : dropList){
-                        PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable2 WHERE ItemUUID = ?");
-                        statement.setString(1, data.getItemUUID().toString());
-                        ResultSet set = statement.executeQuery();
-                        if (set.next()){
-                            if (set.getInt("COUNT(*)") == 0){
-                                statement.close();
-                                PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
-                                statement1.setString(1, data.getDropUser().toString());
-                                statement1.setString(2, data.getItemUUID().toString());
-                                statement1.execute();
-                                statement1.close();
+                    synchronized(dropList) {
+                        for (DropData data : dropList){
+                            PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable2 WHERE ItemUUID = ?");
+                            statement.setString(1, data.getItemUUID().toString());
+                            ResultSet set = statement.executeQuery();
+                            if (set.next()){
+                                if (set.getInt("COUNT(*)") == 0){
+                                    statement.close();
+                                    PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                                    statement1.setString(1, data.getDropUser().toString());
+                                    statement1.setString(2, data.getItemUUID().toString());
+                                    statement1.execute();
+                                    statement1.close();
+                                }
                             }
                         }
                     }
+
 
                     // ここからゴミデータお掃除
 
