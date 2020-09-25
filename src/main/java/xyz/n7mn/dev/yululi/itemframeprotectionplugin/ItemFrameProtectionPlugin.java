@@ -30,10 +30,121 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
                 con = DriverManager.getConnection("jdbc:mysql://" + ServerName + "/" + Database + ServerOption, Username, Password);
 
+                try {
+                    PreparedStatement statement = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                            "  `CreateUser` varchar(36) NOT NULL,\n" +
+                            "  `ItemFrame` varchar(36) NOT NULL\n" +
+                            ")");
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException e){
+                    try {
+                        PreparedStatement statement = con.prepareStatement("SELECT ItemFrame FROM IFPTable");
+                        ResultSet resultSet = statement.executeQuery();
+                        if (!resultSet.next()){
+                            statement.close();
+                            throw new SQLException();
+                        }
+                        statement.close();
+                    } catch (SQLException ex){
+                        PreparedStatement statement1 = con.prepareStatement("RENAME TABLE IFPTable TO IFPTable_old;");
+                        statement1.execute();
+                        statement1.close();
+                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                                "  `CreateUser` varchar(36) NOT NULL,\n" +
+                                "  `ItemFrame` varchar(36) NOT NULL\n" +
+                                ")");
+                        statement2.execute();
+                        statement2.close();
+                    }
+
+
+                }
+
+                try {
+                    PreparedStatement statement = con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                            "  `DropUser` varchar(36) NOT NULL,\n" +
+                            "  `ItemUUID` varchar(36) NOT NULL\n" +
+                            ")");
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException e){
+                    try {
+                        PreparedStatement statement = con.prepareStatement("SELECT ItemUUID FROM IFPTable2");
+                        ResultSet resultSet = statement.executeQuery();
+                        if (!resultSet.next()){
+                            statement.close();
+                            throw new SQLException();
+                        }
+                        statement.close();
+                    } catch (SQLException ex){
+                        PreparedStatement statement1 = con.prepareStatement("RENAME TABLE IFPTable2 TO IFPTable2_old;");
+                        statement1.execute();
+                        statement1.close();
+                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                                "  `DropUser` varchar(36) NOT NULL,\n" +
+                                "  `ItemUUID` varchar(36) NOT NULL\n" +
+                                ")");
+                        statement2.execute();
+                        statement2.close();
+                    }
+                }
+
             } else {
                 String pass = "./" + getDataFolder().getPath() + "/data.db";
                 con = DriverManager.getConnection("jdbc:sqlite:" + pass);
                 con.setAutoCommit(true);
+
+                try {
+                    PreparedStatement statement = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException e){
+                    try {
+                        PreparedStatement statement = con.prepareStatement("SELECT ItemFrame FROM IFPTable");
+                        ResultSet set = statement.executeQuery();
+                        if (!set.next()){
+                            statement.close();
+                            throw new SQLException();
+                        }
+                        statement.close();
+                    } catch (SQLException ex){
+                        PreparedStatement statement1 = con.prepareStatement("ALTER TABLE IFPTable RENAME TO IFPTable_old;");
+                        statement1.execute();
+                        statement1.close();
+
+                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE IFPTable (CreateUser TEXT NOT NULL, ItemFrame TEXT NOT NULL)");
+                        statement2.execute();
+                        statement2.close();
+                    }
+
+                }
+
+                try {
+                    PreparedStatement statement = con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)");
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException e){
+                    try {
+                        PreparedStatement statement = con.prepareStatement("SELECT ItemUUID FROM IFPTable2");
+                        ResultSet set = statement.executeQuery();
+                        if (!set.next()){
+                            statement.close();
+                            throw new SQLException();
+                        }
+                        statement.close();
+                    } catch (SQLException ex){
+                        PreparedStatement statement1 = con.prepareStatement("ALTER TABLE IFPTable2 RENAME TO IFPTable2_old;");
+                        statement1.execute();
+                        statement1.close();
+
+                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE IFPTable2 (DropUser TEXT NOT NULL, ItemUUID TEXT NOT NULL)");
+                        statement2.execute();
+                        statement2.close();
+                    }
+
+                }
+
             }
 
             PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable");
