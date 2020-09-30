@@ -47,15 +47,19 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                         }
                         statement.close();
                     } catch (SQLException ex){
-                        PreparedStatement statement1 = con.prepareStatement("RENAME TABLE IFPTable TO IFPTable_old;");
-                        statement1.execute();
-                        statement1.close();
-                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
-                                "  `CreateUser` varchar(36) NOT NULL,\n" +
-                                "  `ItemFrame` varchar(36) NOT NULL\n" +
-                                ")");
-                        statement2.execute();
-                        statement2.close();
+                        try {
+                            PreparedStatement statement1 = con.prepareStatement("RENAME TABLE IFPTable TO IFPTable_old;");
+                            statement1.execute();
+                            statement1.close();
+                            PreparedStatement statement2 = con.prepareStatement("CREATE TABLE `IFPTable` (\n" +
+                                    "  `CreateUser` varchar(36) NOT NULL,\n" +
+                                    "  `ItemFrame` varchar(36) NOT NULL\n" +
+                                    ")");
+                            statement2.execute();
+                            statement2.close();
+                        } catch (SQLException ex1){
+                            // ex1.printStackTrace();
+                        }
                     }
 
 
@@ -78,15 +82,19 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                         }
                         statement.close();
                     } catch (SQLException ex){
-                        PreparedStatement statement1 = con.prepareStatement("RENAME TABLE IFPTable2 TO IFPTable2_old;");
-                        statement1.execute();
-                        statement1.close();
-                        PreparedStatement statement2 = con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
-                                "  `DropUser` varchar(36) NOT NULL,\n" +
-                                "  `ItemUUID` varchar(36) NOT NULL\n" +
-                                ")");
-                        statement2.execute();
-                        statement2.close();
+                        try {
+                            PreparedStatement statement1 = con.prepareStatement("RENAME TABLE IFPTable2 TO IFPTable2_old;");
+                            statement1.execute();
+                            statement1.close();
+                            PreparedStatement statement2 = con.prepareStatement("CREATE TABLE `IFPTable2` (\n" +
+                                    "  `DropUser` varchar(36) NOT NULL,\n" +
+                                    "  `ItemUUID` varchar(36) NOT NULL\n" +
+                                    ")");
+                            statement2.execute();
+                            statement2.close();
+                        } catch (SQLException ex1){
+                            // ex1.printStackTrace();
+                        }
                     }
                 }
 
