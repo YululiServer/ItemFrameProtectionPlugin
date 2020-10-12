@@ -3,15 +3,17 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.Cancellable;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 
-class ItemFrameAutoDeleteTimer extends BukkitRunnable {
+class ItemFrameAutoDeleteTimer extends BukkitRunnable implements Cancellable {
 
     private ItemFrameData dataAPI;
     private final Plugin plugin;
+    private boolean flag = true;
 
     public ItemFrameAutoDeleteTimer(Plugin plugin, ItemFrameData data){
         this.dataAPI = data;
@@ -71,7 +73,13 @@ class ItemFrameAutoDeleteTimer extends BukkitRunnable {
             }
         }
 
+        if (flag){
+            new ItemFrameAutoDeleteTimer(plugin, dataAPI).runTaskLaterAsynchronously(plugin, 200L);
+        }
+    }
 
-        new ItemFrameAutoDeleteTimer(plugin, dataAPI).runTaskLaterAsynchronously(plugin, 200L);
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.flag = !cancel;
     }
 }

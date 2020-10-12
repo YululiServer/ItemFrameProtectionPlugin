@@ -9,9 +9,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.List;
+
 class ItemFrameCommand implements CommandExecutor {
 
-    private final Plugin plugin = Bukkit.getPluginManager().getPlugin("ItemFrameProtectionPlugin");
+    private final Plugin plugin;
+    private final ItemFrameData dataAPI;
+
+    public ItemFrameCommand(Plugin plugin, ItemFrameData data){
+        this.plugin = plugin;
+        this.dataAPI = data;
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -35,8 +43,9 @@ class ItemFrameCommand implements CommandExecutor {
                     } else if (args.length == 1 && sender instanceof Player) {
                         Player player = (Player) sender;
 
-                        if (args[0].toLowerCase().startsWith("list")){
-                            sender.sendMessage("まだ何も起きません。");
+                        List<FrameData> itemFrameList = dataAPI.getItemFrameList();
+                        if (args[0].toLowerCase().startsWith("list")) {
+                            sender.sendMessage(ChatColor.GREEN + "現在 " + itemFrameList.size() + "件 保護されてます。");
                         }
                     }
                 } catch (Exception e) {

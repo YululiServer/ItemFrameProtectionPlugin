@@ -1,10 +1,13 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.*;
+import java.util.List;
 import java.util.UUID;
 
 public final class ItemFrameProtectionPlugin extends JavaPlugin {
@@ -12,6 +15,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
     private ItemFrameData data = null;
     private Connection con = null;
     private BukkitTask bukkitTask;
+    private BukkitTask bukkitTask2;
 
     @Override
     public void onEnable() {
@@ -179,9 +183,9 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new FrameListener(this, data), this);
 
             bukkitTask = new ItemFrameTimer(this, con, data).runTaskLaterAsynchronously(this, 120L);
-            new ItemFrameAutoDeleteTimer(this, data).runTaskLaterAsynchronously(this, 0L);
+            bukkitTask2 = new ItemFrameAutoDeleteTimer(this, data).runTaskLaterAsynchronously(this, 0L);
 
-            getCommand("ifp").setExecutor(new ItemFrameCommand());
+            getCommand("ifp").setExecutor(new ItemFrameCommand(this, data));
 
             getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 
@@ -205,23 +209,111 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        if (con != null){
-            try {
-                new Thread(() -> {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (con != null) {
+                    try {
+                        bukkitTask.cancel();
+                        bukkitTask2.cancel();
+
                         try {
+                            List<FrameData> itemFrameList = data.getItemFrameList();
+                            // System.out.println("Debug : LockFrame : " + itemFrameList.size());
+                            synchronized (itemFrameList) {
+                                for (FrameData data : itemFrameList) {
+                                    PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable WHERE ItemFrame = ?");
+                                    statement.setString(1, data.getItemFrame().toString());
+                                    ResultSet set = statement.executeQuery();
+                                    if (set.next()) {
+                                        if (set.getInt("COUNT(*)") == 0) {
+                                            statement.close();
+                                            PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable` (`CreateUser`, `ItemFrame`) VALUES (?, ?);");
+                                            statement1.setString(1, data.getCreateUser().toString());
+                                            statement1.setString(2, data.getItemFrame().toString());
+                                            statement1.execute();
+                                            statement1.close();
+                                        }
+                                    }
+                                }
+                            }
+                            // System.out.println("Debug : LockFrame : " + itemFrameList.size());
+
+
+                            List<DropData> dropList = data.getDropList();
+                            // System.out.println("Debug : dropItem : " + dropList.size());
+                            synchronized (dropList) {
+                                for (DropData data : dropList) {
+                                    PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable2 WHERE ItemUUID = ?");
+                                    statement.setString(1, data.getItemUUID().toString());
+                                    ResultSet set = statement.executeQuery();
+                                    if (set.next()) {
+                                        if (set.getInt("COUNT(*)") == 0) {
+                                            statement.close();
+                                            PreparedStatement statement1 = con.prepareStatement("INSERT INTO `IFPTable2` (`DropUser`, `ItemUUID`) VALUES (?, ?);");
+                                            statement1.setString(1, data.getDropUser().toString());
+                                            statement1.setString(2, data.getItemUUID().toString());
+                                            statement1.execute();
+                                            statement1.close();
+                                        }
+                                    }
+                                }
+                            }
+
+
+                            // ここからゴミデータお掃除
+
+                            List<World> worlds = getServer().getWorlds();
+                            int i = 0;
+                            for (World world : worlds) {
+                                i = i + world.getEntities().size();
+                            }
+                            if (i != 0) {
+                                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPTable");
+                                ResultSet set = statement.executeQuery();
+                                while (set.next()) {
+                                    FrameData itemFrame = data.getItemFrame(UUID.fromString(set.getString("CreateUser")), UUID.fromString(set.getString("ItemFrame")));
+                                    if (itemFrame == null) {
+                                        PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable` WHERE `CreateUser` = ? AND `ItemFrame` = ?");
+                                        statement1.setString(1, set.getString("CreateUser"));
+                                        statement1.setString(2, set.getString("ItemFrame"));
+                                        statement1.execute();
+                                        statement1.close();
+                                    }
+                                }
+                                statement.close();
+
+                                PreparedStatement statement2 = con.prepareStatement("SELECT * FROM IFPTable2");
+                                ResultSet set2 = statement2.executeQuery();
+                                while (set2.next()) {
+                                    FrameData itemFrame = data.getItemFrame(UUID.fromString(set2.getString("DropUser")), UUID.fromString(set2.getString("ItemUUID")));
+                                    if (itemFrame == null) {
+                                        PreparedStatement statement1 = con.prepareStatement("DELETE FROM `IFPTable2` WHERE `DropUser` = ? AND `ItemUUID` = ?");
+                                        statement1.setString(1, set2.getString("DropUser"));
+                                        statement1.setString(2, set2.getString("ItemUUID"));
+                                        statement1.execute();
+                                        statement1.close();
+                                    }
+                                }
+                                statement2.close();
+                            }
+
                             con.close();
-                            bukkitTask.cancel();
-                        } catch (Exception e){
-                            // e.printStackTrace();
+                        } catch (Exception e) {
+                            if (getConfig().getBoolean("errorPrint")) {
+                                getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        if (getConfig().getBoolean("errorPrint")) {
+                            getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                            e.printStackTrace();
                         }
                     }
-                ).start();
-            } catch (Exception e){
-                if (getConfig().getBoolean("errorPrint")) {
-                    getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                    e.printStackTrace();
                 }
             }
-        }
+        }.runTaskLaterAsynchronously(this, 0L);
+
     }
 }
