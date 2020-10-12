@@ -32,18 +32,17 @@ class ItemFrameCommand implements CommandExecutor {
                 try {
                     if (args.length == 0 && sender instanceof Player) {
                         Player player = (Player) sender;
-
-                        if (player.hasPermission("ifp.op")){
-                            sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
+                        sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
+                        if (player.hasPermission("ifp.op")) {
                             sender.sendMessage("/ifp user <Username>でユーザーの額縁ロックリストが出る予定。");
-
-                            TextComponent text = new TextComponent();
-                            text.addExtra(ChatColor.YELLOW + "最新5件を表示しています。");
-                            TextComponent click = new TextComponent(ChatColor.YELLOW + "すべてを表示する場合はこちらをクリック！");
-                            click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ifp list"));
-                            text.addExtra(click);
-                            sender.sendMessage(text);
                         }
+
+                        TextComponent text = new TextComponent();
+                        text.addExtra(ChatColor.YELLOW + "最新5件を表示しています。");
+                        TextComponent click = new TextComponent(ChatColor.YELLOW + "すべてを表示する場合はこちらをクリック！");
+                        click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ifp list"));
+                        text.addExtra(click);
+                        sender.sendMessage(text);
                     } else if (args.length == 0) {
                         // sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
                         TextComponent text = new TextComponent();
