@@ -186,6 +186,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             bukkitTask2 = new ItemFrameAutoDeleteTimer(this, data).runTaskLaterAsynchronously(this, 0L);
 
             getCommand("ifp").setExecutor(new ItemFrameCommand(this, data));
+            getCommand("ifp").setTabCompleter(new ItemFrameCommandTab());
 
             getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 

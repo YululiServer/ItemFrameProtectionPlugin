@@ -44,7 +44,7 @@ class ItemFrameCommand implements CommandExecutor {
                         Player player = (Player) sender;
 
                         List<FrameData> itemFrameList = dataAPI.getItemFrameList();
-                        if (args[0].toLowerCase().startsWith("list")) {
+                        if (args[0].toLowerCase().startsWith("count")) {
                             sender.sendMessage(ChatColor.GREEN + "現在 " + itemFrameList.size() + "件 保護されてます。");
                         }
                     }
