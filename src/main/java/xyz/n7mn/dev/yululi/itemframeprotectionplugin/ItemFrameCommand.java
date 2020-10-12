@@ -2,13 +2,10 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -27,20 +24,20 @@ class ItemFrameCommand implements CommandExecutor {
                     if (args.length == 0 && sender instanceof Player) {
                         Player player = (Player) sender;
 
-                        if (player.hasPermission("ifp.op")) {
-                            player.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
-                            player.sendMessage("とくに何も起きません。残念でした。");
-                            // player.sendMessage("/ifp list --- 額縁ロックMyリスト");
-                            // player.sendMessage("/ifp alllist --- 額縁ロック全ロックリスト");
-                        } else {
-                            player.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
-                            player.sendMessage("とくに何も起きません。残念でした。");
-                            // player.sendMessage("/ifp list --- 額縁ロックMyリスト");
+                        if (player.hasPermission("ifp.op")){
+                            sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
+                            sender.sendMessage("/ifp listで全額縁ロックリストが出る予定。");
                         }
                     } else if (args.length == 0) {
                         sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
-                        sender.sendMessage("とくに何も起きません。残念でした。");
+                        sender.sendMessage("とくに何もまだ起きません。残念でした。");
                         // sender.sendMessage("/ifp list --- 額縁ロックリスト");
+                    } else if (args.length == 1 && sender instanceof Player) {
+                        Player player = (Player) sender;
+
+                        if (args[0].toLowerCase().startsWith("list")){
+                            sender.sendMessage("まだ何も起きません。");
+                        }
                     }
                 } catch (Exception e) {
                     if (plugin.getConfig().getBoolean("errorPrint")) {
