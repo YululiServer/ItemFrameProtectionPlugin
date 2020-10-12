@@ -1,6 +1,7 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
-import org.bukkit.Bukkit;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -34,11 +35,23 @@ class ItemFrameCommand implements CommandExecutor {
 
                         if (player.hasPermission("ifp.op")){
                             sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
-                            sender.sendMessage("/ifp listで全額縁ロックリストが出る予定。");
+                            sender.sendMessage("/ifp user <Username>でユーザーの額縁ロックリストが出る予定。");
+
+                            TextComponent text = new TextComponent();
+                            text.addExtra(ChatColor.YELLOW + "最新5件を表示しています。");
+                            TextComponent click = new TextComponent(ChatColor.YELLOW + "すべてを表示する場合はこちらをクリック！");
+                            click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ifp list"));
+                            text.addExtra(click);
+                            sender.sendMessage(text);
                         }
                     } else if (args.length == 0) {
-                        sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
-                        sender.sendMessage("とくに何もまだ起きません。残念でした。");
+                        // sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
+                        TextComponent text = new TextComponent();
+                        text.addExtra(ChatColor.YELLOW + "最新5件を表示しています。");
+                        TextComponent click = new TextComponent(ChatColor.YELLOW + "すべてを表示する場合はこちらをクリック！");
+                        click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ifp list"));
+                        text.addExtra(click);
+                        sender.sendMessage(text);
                         // sender.sendMessage("/ifp list --- 額縁ロックリスト");
                     } else if (args.length == 1 && sender instanceof Player) {
                         Player player = (Player) sender;
