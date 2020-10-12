@@ -32,7 +32,7 @@ class ItemFrameCommand implements CommandExecutor {
                 try {
                     if (args.length == 0 && sender instanceof Player) {
                         Player player = (Player) sender;
-                        sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
+                        sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion() + " -----");
                         if (player.hasPermission("ifp.op")) {
                             sender.sendMessage("/ifp user <Username>でユーザーの額縁ロックリストが出る予定。");
                         }
@@ -44,7 +44,7 @@ class ItemFrameCommand implements CommandExecutor {
                         text.addExtra(click);
                         sender.sendMessage(text);
                     } else if (args.length == 0) {
-                        // sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion());
+                        sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion() + " -----");
                         TextComponent text = new TextComponent();
                         text.addExtra(ChatColor.YELLOW + "最新5件を表示しています。");
                         TextComponent click = new TextComponent(ChatColor.YELLOW + "すべてを表示する場合はこちらをクリック！");
@@ -58,6 +58,10 @@ class ItemFrameCommand implements CommandExecutor {
                         List<FrameData> itemFrameList = dataAPI.getItemFrameList();
                         if (args[0].toLowerCase().startsWith("count")) {
                             sender.sendMessage(ChatColor.GREEN + "現在 " + itemFrameList.size() + "件 保護されてます。");
+                        }
+
+                        if (args[0].toLowerCase().startsWith("list")) {
+                            sender.sendMessage(ChatColor.GREEN + "準備中...");
                         }
                     }
                 } catch (Exception e) {
