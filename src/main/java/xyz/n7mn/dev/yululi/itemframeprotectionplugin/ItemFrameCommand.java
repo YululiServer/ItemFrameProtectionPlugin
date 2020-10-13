@@ -2,10 +2,13 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -45,18 +48,32 @@ class ItemFrameCommand implements CommandExecutor {
                         sender.sendMessage(text);
                     } else if (args.length == 0) {
                         sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion() + " -----");
-                        TextComponent text = new TextComponent();
-                        text.addExtra(ChatColor.YELLOW + "最新5件を表示しています。");
-                        TextComponent click = new TextComponent(ChatColor.YELLOW + "すべてを表示する場合はこちらをクリック！");
-                        click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ifp list"));
-                        text.addExtra(click);
-                        sender.sendMessage(text);
-                        // sender.sendMessage("/ifp list --- 額縁ロックリスト");
+                        List<FrameData> itemFrameList = dataAPI.getItemFrameList();
+                        int i = 0;
+                        synchronized(itemFrameList) {
+                            for (FrameData data : itemFrameList) {
+                                sender.sendMessage(ChatColor.YELLOW + (i + " : "));
+                                sender.sendMessage(ChatColor.YELLOW + "   UUID : " + data.getItemFrame());
+                                sender.sendMessage(ChatColor.YELLOW + "   LockedUser : " + data.getCreateUser());
+                                Entity entity = Bukkit.getEntity(data.getItemFrame());
+                                if (entity != null){
+                                    Location loc = entity.getLocation();
+                                    String name = loc.getWorld().getName();
+                                    int blockX = loc.getBlockX();
+                                    int blockY = loc.getBlockY();
+                                    int blockZ = loc.getBlockZ();
+                                    sender.sendMessage(ChatColor.YELLOW + "   WorldName : " + name);
+                                    sender.sendMessage(ChatColor.YELLOW + "   X : " + blockX);
+                                    sender.sendMessage(ChatColor.YELLOW + "   Y : " + blockY);
+                                    sender.sendMessage(ChatColor.YELLOW + "   Z : " + blockZ);
+                                }
+                            }
+                        }
                     } else if (args.length == 1 && sender instanceof Player) {
                         Player player = (Player) sender;
 
                         List<FrameData> itemFrameList = dataAPI.getItemFrameList();
-                        if (args[0].toLowerCase().startsWith("count")) {
+                        if (args[0].toLowerCase().startsWith("count") && player.hasPermission("ifp.op")) {
                             sender.sendMessage(ChatColor.GREEN + "現在 " + itemFrameList.size() + "件 保護されてます。");
                         }
 
