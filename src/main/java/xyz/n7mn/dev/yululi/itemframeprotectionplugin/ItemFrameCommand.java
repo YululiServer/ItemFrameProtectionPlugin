@@ -49,13 +49,19 @@ class ItemFrameCommand implements CommandExecutor {
                     } else if (args.length == 0) {
                         sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion() + " -----");
                         List<FrameData> itemFrameList = dataAPI.getItemFrameList();
-                        int i = 0;
+                        int i = 1;
                         synchronized(itemFrameList) {
                             for (FrameData data : itemFrameList) {
                                 sender.sendMessage(ChatColor.YELLOW + (i + " : "));
                                 sender.sendMessage(ChatColor.YELLOW + "   UUID : " + data.getItemFrame());
-                                sender.sendMessage(ChatColor.YELLOW + "   LockedUser : " + data.getCreateUser());
-                                Entity entity = Bukkit.getEntity(data.getItemFrame());
+                                String user = UUID2UserName.getUser(data.getCreateUser());
+                                if (user != null){
+                                    sender.sendMessage(ChatColor.YELLOW + "   LockedUser : " + user);
+                                } else {
+                                    sender.sendMessage(ChatColor.YELLOW + "   LockedUser : " + data.getCreateUser());
+                                }
+
+                                Entity entity = Bukkit.getServer().getEntity(data.getItemFrame());
                                 if (entity != null){
                                     Location loc = entity.getLocation();
                                     String name = loc.getWorld().getName();
