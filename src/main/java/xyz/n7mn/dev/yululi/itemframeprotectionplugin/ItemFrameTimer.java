@@ -36,6 +36,7 @@ class ItemFrameTimer extends BukkitRunnable implements Cancellable {
                     // System.out.println("Debug : LockFrame : " + itemFrameList.size());
                     synchronized(itemFrameList) {
                         for (FrameData data : itemFrameList){
+
                             PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM IFPTable WHERE ItemFrame = ?");
                             statement.setString(1, data.getItemFrame().toString());
                             ResultSet set = statement.executeQuery();
