@@ -64,6 +64,8 @@ class FrameListener implements Listener {
                     if (foundData.getCreateUser().equals(player.getUniqueId())){
                         // 保護した人
                         ItemFrameData.delFrameList(foundData);
+                        ItemFrame frame = (ItemFrame) rightClicked;
+
                         player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スニークしながら右クリックで再度保護できます。");
                     } else {
                         // 保護してない人
@@ -84,6 +86,10 @@ class FrameListener implements Listener {
                 if (player.isSneaking()){
                     FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
                     ItemFrameData.addFrameList(frameData);
+                    ItemFrame frame = (ItemFrame) rightClicked;
+                    if (frame.getItem().getType() == Material.AIR){
+                        frame.setItem(player.getInventory().getItemInMainHand());
+                    }
 
                     player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スニークしながら右クリックで保護を解除できます。");
                     e.setCancelled(true);
