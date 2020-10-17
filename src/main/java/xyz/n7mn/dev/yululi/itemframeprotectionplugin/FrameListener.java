@@ -39,50 +39,54 @@ class FrameListener implements Listener {
         try {
             final Player player = e.getPlayer();
             final Entity rightClicked = e.getRightClicked();
-            final FrameData data = ItemFrameData.getItemFrame(e.getPlayer().getUniqueId(), e.getRightClicked().getUniqueId());
 
-            // 保護してない
-            if (data == null && rightClicked instanceof ItemFrame){
-                ItemFrame frame = (ItemFrame) rightClicked;
-                if (player.isSneaking()){
-                    if (frame.getItem().getType() == Material.AIR){
-                        frame.setItem(player.getInventory().getItemInMainHand());
+            final List<FrameData> list = ItemFrameData.getItemFrameList();
+            FrameData foundData = null;
+            boolean foundFlag = false;
+
+            synchronized(list) {
+
+                for (FrameData data : list){
+
+                    if (data.getItemFrame().equals(rightClicked.getUniqueId())){
+                        foundFlag = true;
+                        foundData = data;
+                        break;
                     }
-                    // setData(player.getUniqueId(), rightClicked.getUniqueId());
-                    FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
-                    ItemFrameData.addFrameList(frameData);
+                }
 
-                    player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スネークしながら右クリックで保護を解除できます。");
-                    e.setCancelled(true);
+            }
+
+            // 保護あり
+            if (foundFlag){
+
+                if (foundData.getCreateUser().equals(player.getUniqueId())){
+                    // 保護した人
+                    ItemFrameData.delFrameList(foundData);
+                    player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スニークしながら右クリックで再度保護できます。");
                 } else {
+                    // 保護してない人
+                    if (player.hasPermission("ifp.op")){
+                        ItemFrameData.delFrameList(foundData);
+                        player.sendMessage(ChatColor.YELLOW + "額縁を代理で保護解除しました。 もう一度スニークしながら右クリックで再度保護できます。");
 
-                    if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE){
-
-                        if (frame.getItem().getType() == Material.AIR){
-                            ItemStack hand = player.getInventory().getItemInMainHand();
-                            frame.setItem(hand);
-                            // player.getInventory().addItem(hand);
-                            e.setCancelled(true);
-                        }
+                        e.setCancelled(true);
+                        return;
                     }
-
+                    player.sendMessage(ChatColor.RED + "この額縁は別の方が保護しています！");
                 }
-            }
-            if (rightClicked instanceof ItemFrame && data != null) {
-                // 保護してる
-                if (player.isSneaking()){
-                    if (data.getCreateUser().equals(player.getUniqueId()) || player.hasPermission("ifp.op")){
-                        FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
-                        // System.out.println("! : " + player.getUniqueId());
-                        ItemFrameData.delFrameList(frameData);
+                e.setCancelled(true);
 
-                        player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スネークしながら右クリックで再度保護できます。");
-                    } else {
-                        player.sendMessage(ChatColor.GREEN + "この額縁は保護されています。");
-                    }
-                    e.setCancelled(true);
-                }
+            } else {
+
+                FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
+                ItemFrameData.addFrameList(frameData);
+
+                player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スニークしながら右クリックで保護を解除できます。");
+                e.setCancelled(true);
+
             }
+            return;
         } catch (Exception ex){
             if (plugin.getConfig().getBoolean("errorPrint")){
                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました");
