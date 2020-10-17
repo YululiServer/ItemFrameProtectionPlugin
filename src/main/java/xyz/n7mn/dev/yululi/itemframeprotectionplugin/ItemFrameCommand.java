@@ -37,15 +37,44 @@ class ItemFrameCommand implements CommandExecutor {
                         Player player = (Player) sender;
                         sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion() + " -----");
                         if (player.hasPermission("ifp.op")) {
-                            sender.sendMessage("/ifp user <Username>でユーザーの額縁ロックリストが出る予定。");
+                            sender.sendMessage(ChatColor.GOLD + "/ifp count --- 全体保護数");
+                            sender.sendMessage(ChatColor.GOLD + "/ifp user <Username> --- ユーザーロックリスト");
                         }
 
                         TextComponent text = new TextComponent();
-                        text.addExtra(ChatColor.YELLOW + "最新5件を表示しています。");
+                        text.addExtra(ChatColor.YELLOW + "5件を表示しています。");
                         TextComponent click = new TextComponent(ChatColor.YELLOW + "すべてを表示する場合はこちらをクリック！");
                         click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ifp list"));
                         text.addExtra(click);
                         sender.sendMessage(text);
+
+                        List<FrameData> list = dataAPI.getItemFrameList();
+
+                        synchronized(list) {
+
+                            int count = 0;
+
+                            for (FrameData data : list){
+
+                                if (data.getCreateUser().equals(player.getUniqueId())){
+
+                                    Entity entity = Bukkit.getServer().getEntity(data.getItemFrame());
+                                    if (entity != null){
+                                        Location loc = entity.getLocation();
+                                        sender.sendMessage("ワールド名： " + loc.getWorld().getName());
+                                        sender.sendMessage("X: " + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ());
+                                        count++;
+                                    }
+
+                                }
+                                if (count >= 5){
+                                    break;
+                                }
+                            }
+
+                        }
+
+
                     } else if (args.length == 0) {
                         sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion() + " -----");
                         List<FrameData> itemFrameList = dataAPI.getItemFrameList();

@@ -311,7 +311,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                     }
                 }
             }
+            getLogger().info("Disabled ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
         }).start();
-
     }
 }
