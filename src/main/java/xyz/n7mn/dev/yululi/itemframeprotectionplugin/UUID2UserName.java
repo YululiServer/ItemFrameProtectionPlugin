@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.io.BufferedReader;
@@ -28,9 +29,10 @@ class UUID2UserName {
             }
         }
 
-        for (Player player : Bukkit.getServer().getOnlinePlayers()){
-            if (player.getUniqueId().equals(uuid))
+        for (OfflinePlayer player : Bukkit.getServer().getOfflinePlayers()){
+            if (player.getUniqueId().equals(uuid)) {
                 return player.getName();
+            }
         }
 
         try {

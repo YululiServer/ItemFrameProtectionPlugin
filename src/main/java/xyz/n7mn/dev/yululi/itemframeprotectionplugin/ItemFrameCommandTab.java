@@ -20,9 +20,8 @@ class ItemFrameCommandTab implements TabExecutor {
         List<String> list = new ArrayList<>();
         if (sender instanceof Player){
             Player player = (Player)sender;
-            if (args.length == 0){
+            if (args.length == 1){
 
-                list.add("list");
                 if (player.hasPermission("ifp.op")){
                     list.add("count");
                     list.add("user");
@@ -31,7 +30,7 @@ class ItemFrameCommandTab implements TabExecutor {
                 return list;
             }
 
-            if (args.length == 1 && player.hasPermission("ifp.op")){
+            if (args.length == 2 && player.hasPermission("ifp.op")){
 
                 for (Player p : sender.getServer().getOnlinePlayers()){
                     list.add(p.getName());

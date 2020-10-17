@@ -37,8 +37,19 @@ class ItemFrameCommand implements CommandExecutor {
                         Player player = (Player) sender;
                         sender.sendMessage("----- ItemFrameProtectionPlugin Ver " + plugin.getDescription().getVersion() + " -----");
                         if (player.hasPermission("ifp.op")) {
-                            sender.sendMessage(ChatColor.GOLD + "/ifp count --- 全体保護数");
-                            sender.sendMessage(ChatColor.GOLD + "/ifp user <Username> --- ユーザーロックリスト");
+                            TextComponent countText = new TextComponent();
+                            TextComponent countClick = new TextComponent(ChatColor.GOLD + "/ifp count");
+                            countClick.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/ifp count"));
+                            countText.addExtra(countClick);
+                            countText.addExtra(" --- 全体保護数");
+                            TextComponent userText = new TextComponent();
+                            TextComponent userClick = new TextComponent(ChatColor.GOLD + "/ifp user <user>");
+                            userClick.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/ifp user " + player.getName()));
+                            userText.addExtra(userClick);
+                            userText.addExtra(" --- ユーザーロックリスト");
+
+                            sender.sendMessage(countText);
+                            sender.sendMessage(userText);
                         }
 
                         TextComponent text = new TextComponent();
@@ -62,7 +73,16 @@ class ItemFrameCommand implements CommandExecutor {
                                     if (entity != null){
                                         Location loc = entity.getLocation();
                                         sender.sendMessage("ワールド名： " + loc.getWorld().getName());
-                                        sender.sendMessage("X: " + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ());
+                                        if (player.hasPermission("ifp.op")){
+                                            TextComponent text1 = new TextComponent();
+                                            text1.addExtra("X: " + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ() + " ");
+                                            TextComponent click1 = new TextComponent(ChatColor.AQUA + "[Teleport]");
+                                            click1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + loc.getBlockX() + " " +loc.getBlockY() + " " + loc.getBlockZ()));
+                                            text1.addExtra(click1);
+                                            sender.sendMessage(text1);
+                                        } else {
+                                            sender.sendMessage("X: " + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ());
+                                        }
                                         count++;
                                     }
 
@@ -113,7 +133,61 @@ class ItemFrameCommand implements CommandExecutor {
                         }
 
                         if (args[0].toLowerCase().startsWith("list")) {
-                            sender.sendMessage(ChatColor.GREEN + "準備中...");
+                            sender.sendMessage("---- 額縁保護リスト ----");
+                            for (FrameData data : itemFrameList) {
+                                if (data.getCreateUser().equals(player.getUniqueId())) {
+                                    Entity entity = Bukkit.getServer().getEntity(data.getItemFrame());
+                                    if (entity != null){
+                                        Location loc = entity.getLocation();
+                                        sender.sendMessage("ワールド名： " + loc.getWorld().getName());
+                                        if (player.hasPermission("ifp.op")){
+                                            TextComponent text1 = new TextComponent();
+                                            text1.addExtra("X: " + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ() + " ");
+                                            TextComponent click1 = new TextComponent(ChatColor.AQUA + "[Teleport]");
+                                            click1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + loc.getBlockX() + " " +loc.getBlockY() + " " + loc.getBlockZ()));
+                                            text1.addExtra(click1);
+                                            sender.sendMessage(text1);
+                                        } else {
+                                            sender.sendMessage("X: " + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (args[0].toLowerCase().startsWith("user") && !player.hasPermission("ifp.op")) {
+                            sender.sendMessage(ChatColor.RED + "権限がありません。");
+                        }
+
+                        if (args[0].toLowerCase().startsWith("user") && player.hasPermission("ifp.op")) {
+                            sender.sendMessage(ChatColor.RED + "ユーザー名選択するのが抜けているぞ");
+                        }
+                    } else if (args.length == 2 && sender instanceof Player) {
+                        Player player = (Player) sender;
+                        if (args[0].toLowerCase().startsWith("user") && !player.hasPermission("ifp.op")){
+                            sender.sendMessage(ChatColor.RED + "権限がありません。");
+                        }
+
+                        if (args[0].toLowerCase().startsWith("user") && player.hasPermission("ifp.op")) {
+
+                            List<FrameData> itemFrameList = dataAPI.getItemFrameList();
+                            sender.sendMessage("---- "+args[1]+"さんの額縁保護リスト ----");
+                            synchronized(itemFrameList) {
+                                for (FrameData data : itemFrameList) {
+                                    if (UUID2UserName.getUser(data.getCreateUser()).equals(args[1])){
+                                        Entity entity = Bukkit.getServer().getEntity(data.getItemFrame());
+                                        if (entity != null) {
+                                            Location loc = entity.getLocation();
+                                            TextComponent text1 = new TextComponent();
+                                            text1.addExtra("X: " + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ() + " ");
+                                            TextComponent click1 = new TextComponent(ChatColor.AQUA + "[Teleport]");
+                                            click1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + loc.getBlockX() + " " +loc.getBlockY() + " " + loc.getBlockZ()));
+                                            text1.addExtra(click1);
+                                            sender.sendMessage(text1);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 } catch (Exception e) {
