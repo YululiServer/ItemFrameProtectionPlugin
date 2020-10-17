@@ -60,30 +60,40 @@ class FrameListener implements Listener {
             // 保護あり
             if (foundFlag){
 
-                if (foundData.getCreateUser().equals(player.getUniqueId())){
-                    // 保護した人
-                    ItemFrameData.delFrameList(foundData);
-                    player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スニークしながら右クリックで再度保護できます。");
-                } else {
-                    // 保護してない人
-                    if (player.hasPermission("ifp.op")){
+                if (player.isSneaking()){
+                    if (foundData.getCreateUser().equals(player.getUniqueId())){
+                        // 保護した人
                         ItemFrameData.delFrameList(foundData);
-                        player.sendMessage(ChatColor.YELLOW + "額縁を代理で保護解除しました。 もう一度スニークしながら右クリックで再度保護できます。");
+                        ItemFrame frame = (ItemFrame) rightClicked;
 
-                        e.setCancelled(true);
-                        return;
+                        player.sendMessage(ChatColor.GREEN + "額縁を保護解除しました。 もう一度スニークしながら右クリックで再度保護できます。");
+                    } else {
+                        // 保護してない人
+                        if (player.hasPermission("ifp.op")){
+                            ItemFrameData.delFrameList(foundData);
+                            player.sendMessage(ChatColor.YELLOW + "額縁を代理で保護解除しました。 もう一度スニークしながら右クリックで再度保護できます。");
+
+                            e.setCancelled(true);
+                            return;
+                        }
+                        player.sendMessage(ChatColor.RED + "この額縁は別の方が保護しています！");
                     }
-                    player.sendMessage(ChatColor.RED + "この額縁は別の方が保護しています！");
+                    e.setCancelled(true);
                 }
-                e.setCancelled(true);
 
             } else {
 
-                FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
-                ItemFrameData.addFrameList(frameData);
+                if (player.isSneaking()){
+                    FrameData frameData = new FrameData(player.getUniqueId(), rightClicked.getUniqueId());
+                    ItemFrameData.addFrameList(frameData);
+                    ItemFrame frame = (ItemFrame) rightClicked;
+                    if (frame.getItem().getType() == Material.AIR){
+                        frame.setItem(player.getInventory().getItemInMainHand());
+                    }
 
-                player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スニークしながら右クリックで保護を解除できます。");
-                e.setCancelled(true);
+                    player.sendMessage(ChatColor.GREEN + "額縁を保護しました。 もう一度スニークしながら右クリックで保護を解除できます。");
+                    e.setCancelled(true);
+                }
 
             }
             return;
