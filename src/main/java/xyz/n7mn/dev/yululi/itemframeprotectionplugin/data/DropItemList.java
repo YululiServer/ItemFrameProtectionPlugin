@@ -182,4 +182,58 @@ class DropItemList implements DataInteface {
          }
      }
 
+     public void addDropItemDataList(DropItemData data){
+
+        try {
+            synchronized (dropItemDataList){
+
+                if (dropItemDataList.size() > 512){
+                    forceCacheToSQL();
+                }
+
+                dropItemDataList.add(data);
+            }
+        } catch (Exception e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+
+     }
+
+     public void deleteDropItemDataList(UUID dropItemUUID){
+
+        boolean flag = false;
+
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM ItemFrameTable2 WHERE DropItemUUID = ?;");
+            statement.setString(1, dropItemUUID.toString());
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()){
+
+                if (resultSet.getInt("COUNT(*)") != 0){
+                    statement.close();
+                    PreparedStatement statement2 = con.prepareStatement("DELETE FROM `ItemFrameTable2` WHERE DropItemUUID = ?");
+                    statement2.setString(1, dropItemUUID.toString());
+                    statement2.execute();
+                    statement2.close();
+
+                } else {
+                    statement.close();
+                }
+
+            } else {
+                statement.close();
+            }
+
+        } catch (SQLException e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+
+     }
+
 }
