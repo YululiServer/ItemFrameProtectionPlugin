@@ -6,17 +6,20 @@ import java.util.UUID;
 public class DropItemData {
     UUID DropItemUUID;
     UUID WorldUUID;
+    UUID DropUser;
     Date DropDate;
 
     public DropItemData(){
         this.DropItemUUID = null;
         this.WorldUUID = null;
+        this.DropUser = null;
         this.DropDate = null;
     }
 
-    public DropItemData(UUID dropItemUUID, UUID worldUUID, Date dropDate){
+    public DropItemData(UUID dropItemUUID, UUID worldUUID, UUID dropUser, Date dropDate){
         this.DropItemUUID = dropItemUUID;
         this.WorldUUID = worldUUID;
+        this.DropUser = dropUser;
         this.DropDate = dropDate;
     }
 
@@ -34,6 +37,14 @@ public class DropItemData {
 
     public void setWorldUUID(UUID worldUUID) {
         WorldUUID = worldUUID;
+    }
+
+    public UUID getDropUser(){
+        return DropUser;
+    }
+
+    public void setDropUser(UUID dropUser){
+        DropUser = dropUser;
     }
 
     public Date getDropDate() {
