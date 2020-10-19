@@ -1,0 +1,2 @@
+# ItemFrameProtectionPlugin
+なにかとお騒がせな額縁保護プラグインもついにVer 3.0
