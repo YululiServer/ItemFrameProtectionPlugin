@@ -16,7 +16,7 @@ class DropItemList implements DataInteface {
     private final Connection con;
     private final Plugin plugin;
 
-    private DropItemList(Connection con, Plugin plugin){
+    DropItemList(Connection con, Plugin plugin){
         this.con = con;
         this.plugin = plugin;
         this.dropItemDataList = Collections.synchronizedList(new ArrayList<>());
@@ -115,7 +115,7 @@ class DropItemList implements DataInteface {
         }
     }
 
-    @Deprecated
+
     public List<DropItemData> getDropItemDataList() {
         List<DropItemData> dataList = new ArrayList<>();
 
@@ -149,40 +149,8 @@ class DropItemList implements DataInteface {
         }
     }
 
-     public List<DropItemData> getDropItemDataListByActive(){
-         List<DropItemData> dataList = new ArrayList<>();
 
-         try {
-             PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable2 WHERE Active = 1");
-             ResultSet set = statement.executeQuery();
-
-             while (set.next()){
-                 DropItemData data = new DropItemData();
-                 data.setDropItemUUID(UUID.fromString(set.getString("DropItemUUID")));
-                 data.setWorldUUID(UUID.fromString(set.getString("WorldUUID")));
-                 data.setDropUser(UUID.fromString(set.getString("DropUser")));
-                 data.setDropDate(new Date(set.getTimestamp("DropDate").getTime()));
-
-                 dataList.add(data);
-             }
-
-             synchronized (dropItemDataList){
-                 dataList.addAll(dropItemDataList);
-             }
-
-             return dataList;
-
-         } catch (Exception e){
-             if (plugin.getConfig().getBoolean("errorPrint")){
-                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                 e.printStackTrace();
-             }
-
-             return null;
-         }
-     }
-
-     public void addDropItemDataList(DropItemData data){
+    public void addDropItemDataList(DropItemData data){
 
         try {
             synchronized (dropItemDataList){
@@ -200,9 +168,9 @@ class DropItemList implements DataInteface {
             }
         }
 
-     }
+    }
 
-     public void deleteDropItemDataList(UUID dropItemUUID){
+    public void deleteDropItemDataList(UUID dropItemUUID){
 
         boolean flag = false;
 
@@ -234,6 +202,6 @@ class DropItemList implements DataInteface {
             }
         }
 
-     }
+    }
 
 }

@@ -20,7 +20,7 @@ class ItemFrameList implements DataInteface {
     private final Connection con;
     private final Plugin plugin;
 
-    private ItemFrameList(Connection con, Plugin plugin){
+    ItemFrameList(Connection con, Plugin plugin){
         this.con = con;
         this.plugin = plugin;
         this.frameDataList = Collections.synchronizedList(new ArrayList<>());
