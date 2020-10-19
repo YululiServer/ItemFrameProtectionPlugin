@@ -13,7 +13,7 @@ public class DataAPI {
     final ItemFrameList item;
     final Plugin plugin;
 
-    DataAPI(Connection con, Plugin plugin){
+    public DataAPI(Connection con, Plugin plugin){
 
         drop = new DropItemList(con, plugin);
         item = new ItemFrameList(con, plugin);
