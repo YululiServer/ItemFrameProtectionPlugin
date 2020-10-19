@@ -168,6 +168,57 @@ class ItemFrameList implements DataInteface {
             }
         }
 
-        return null;
+        return dataList;
+    }
+
+    public void addFrameData(FrameData data){
+        try {
+            synchronized (frameDataList){
+
+                frameDataList.add(data);
+                if (frameDataList.size() > 15){
+                    this.forceCacheToSQL();
+                }
+
+
+            }
+        } catch (Exception e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void deleteFrameData(UUID itemFrameUUID){
+
+        try {
+            boolean flag = false;
+            synchronized (frameDataList){
+                int i = 0;
+                for (FrameData data : frameDataList){
+                    if (data.getItemFrameUUID().equals(itemFrameUUID)){
+                        frameDataList.remove(i);
+                        flag = true;
+                        break;
+                    }
+                    i++;
+                }
+
+                if (!flag){
+                    PreparedStatement statement = con.prepareStatement("DELETE FROM `ItemFrameTable1` WHERE `ItemFrameUUID` = ?");
+                    statement.setString(1, itemFrameUUID.toString());
+                    statement.execute();
+                    statement.close();
+                }
+            }
+
+        } catch (Exception e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+
     }
 }
