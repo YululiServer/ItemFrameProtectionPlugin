@@ -14,6 +14,9 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
         try {
 
+
+
+
             getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 
         } catch (Exception e){
