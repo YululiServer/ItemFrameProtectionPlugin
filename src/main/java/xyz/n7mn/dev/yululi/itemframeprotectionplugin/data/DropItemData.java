@@ -4,10 +4,10 @@ import java.util.Date;
 import java.util.UUID;
 
 public class DropItemData {
-    UUID DropItemUUID;
-    UUID WorldUUID;
-    UUID DropUser;
-    Date DropDate;
+    private UUID DropItemUUID;
+    private UUID WorldUUID;
+    private UUID DropUser;
+    private Date DropDate;
 
     public DropItemData(){
         this.DropItemUUID = null;
