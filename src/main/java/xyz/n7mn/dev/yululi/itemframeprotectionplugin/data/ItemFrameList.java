@@ -6,11 +6,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 class ItemFrameList implements DataInteface {
 
@@ -143,8 +145,34 @@ class ItemFrameList implements DataInteface {
 
     }
 
+    @Deprecated
+    public List<FrameData> getFrameDataList(){
+        List<FrameData> dataList = new ArrayList<>();
 
-    public List<FrameData> getFrameDataList() {
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1");
+            ResultSet set = statement.executeQuery();
+            while (set.next()){
+                FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), new Gson().fromJson(set.getString("FrameItem"), ItemStack.class), UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
+                dataList.add(data);
+            }
+        } catch (SQLException e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+
+        synchronized (frameDataList){
+            if (frameDataList.size() != 0){
+                dataList.addAll(frameDataList);
+            }
+        }
+
+        return dataList;
+    }
+
+    public List<FrameData> getFrameDataListByActive() {
 
         List<FrameData> dataList = new ArrayList<>();
 
@@ -206,7 +234,7 @@ class ItemFrameList implements DataInteface {
                 }
 
                 if (!flag){
-                    PreparedStatement statement = con.prepareStatement("DELETE FROM `ItemFrameTable1` WHERE `ItemFrameUUID` = ?");
+                    PreparedStatement statement = con.prepareStatement("UPDATE WhereList SET Active = 0 WHERE ItemFrameUUID = ?");
                     statement.setString(1, itemFrameUUID.toString());
                     statement.execute();
                     statement.close();
