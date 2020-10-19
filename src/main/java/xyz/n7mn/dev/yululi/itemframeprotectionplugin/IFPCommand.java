@@ -103,6 +103,7 @@ class IFPCommand implements CommandExecutor {
 
                 if (args[0].toLowerCase().equals("admin")){
                     List<FrameData> list = api.getListByFrameData(false);
+                    sender.sendMessage("---- ItemFrameProtectPlugin Ver " + plugin.getDescription().getVersion() + " ----");
                     sender.sendMessage(ChatColor.GREEN + "保護件数 : " + list.size() + " 件");
 
                     for (FrameData data : list){
