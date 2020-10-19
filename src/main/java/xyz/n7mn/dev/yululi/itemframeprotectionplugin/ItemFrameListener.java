@@ -1,10 +1,7 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -86,6 +83,9 @@ class ItemFrameListener implements Listener {
                     data.setActive(true);
 
                     api.addItemFrame(data);
+                    if (frame.getItem().getType() == Material.AIR){
+                        frame.setItem(player.getInventory().getItemInMainHand());
+                    }
                     player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
                 }
 
