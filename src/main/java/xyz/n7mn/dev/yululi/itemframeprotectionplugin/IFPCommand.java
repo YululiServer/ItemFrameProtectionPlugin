@@ -33,6 +33,7 @@ class IFPCommand implements CommandExecutor {
 
             sender.sendMessage("---- ItemFrameProtectPlugin Ver " + plugin.getDescription().getVersion() + " ----");
             List<FrameData> list = api.getListByFrameData(false);
+            sender.sendMessage(ChatColor.GREEN + "ProtectCount : " + list.size());
 
             for (FrameData data : list){
 
