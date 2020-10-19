@@ -74,6 +74,9 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
             getCommand("ifp").setExecutor(new IFPCommand(dataAPI));
             getCommand("ifp").setTabCompleter(new IFPCommandTab());
+
+            getServer().getPluginManager().registerEvents(new ItemFrameListener(dataAPI), this);
+
             getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 
         } catch (Exception e){

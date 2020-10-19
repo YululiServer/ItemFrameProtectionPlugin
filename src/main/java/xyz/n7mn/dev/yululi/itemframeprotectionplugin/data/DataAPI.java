@@ -59,6 +59,17 @@ public class DataAPI {
         drop.createTable();
     }
 
+    public void addItemFrame(FrameData data){
+
+        item.addFrameData(data);
+
+    }
+
+    public void addDropItem(DropItemData data){
+
+        drop.addDropItemDataList(data);
+
+    }
 
     public void deleteAllTableByFrame(){
 
@@ -100,4 +111,5 @@ public class DataAPI {
         drop.forceCacheToSQL();
 
     }
+
 }
