@@ -86,33 +86,48 @@ class DropItemList implements DataInteface {
 
     @Override
     public void forceCacheToSQL() {
-        synchronized (dropItemDataList){
-            if (dropItemDataList.size() == 0){
-                return;
-            }
+        BukkitRunnable bukkitRunnable = new BukkitRunnable() {
+            @Override
+            public void run() {
 
-            try {
+                List<DropItemData> temp = new ArrayList<>();
 
-                for (DropItemData data : dropItemDataList){
+                synchronized (dropItemDataList) {
+                    if (dropItemDataList.size() == 0) {
+                        return;
+                    }
 
-                    PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable2` ( `DropItemUUID` , `WorldUUID`, `DropUser` , `DropDate`) VALUES (?,?,?,?)");
-                    statement.setString(1, data.getDropItemUUID().toString());
-                    statement.setString(2, data.getWorldUUID().toString());
-                    statement.setString(3, data.getDropUser().toString());
-                    statement.setTimestamp(4, new java.sql.Timestamp(data.getDropDate().getTime()));
-                    statement.execute();
-                    statement.close();
-
+                    temp.addAll(dropItemDataList);
+                    dropItemDataList.clear();
                 }
 
-                dropItemDataList.clear();
-            } catch (Exception e){
-                if (plugin.getConfig().getBoolean("errorPrint")){
-                    plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                    e.printStackTrace();
+                try {
+
+                    for (DropItemData data : temp){
+
+                        PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable2` ( `DropItemUUID` , `WorldUUID`, `DropUser` , `DropDate`) VALUES (?,?,?,?)");
+                        statement.setString(1, data.getDropItemUUID().toString());
+                        statement.setString(2, data.getWorldUUID().toString());
+                        statement.setString(3, data.getDropUser().toString());
+                        statement.setTimestamp(4, new java.sql.Timestamp(data.getDropDate().getTime()));
+                        statement.execute();
+                        statement.close();
+
+                    }
+
+
+                } catch (Exception e){
+                    if (plugin.getConfig().getBoolean("errorPrint")){
+                        plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                        e.printStackTrace();
+                    }
                 }
+
+                temp.clear();
+                this.cancel();
             }
-        }
+        };
+        bukkitRunnable.runTaskLaterAsynchronously(plugin, 0L);
     }
 
 
@@ -202,6 +217,12 @@ class DropItemList implements DataInteface {
             }
         }
 
+    }
+
+    public int getDropCacheCount(){
+        synchronized (dropItemDataList){
+            return dropItemDataList.size();
+        }
     }
 
 }

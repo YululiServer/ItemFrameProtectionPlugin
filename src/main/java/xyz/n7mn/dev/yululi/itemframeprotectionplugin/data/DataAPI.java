@@ -112,4 +112,8 @@ public class DataAPI {
 
     }
 
+    public int getCacheCount(){
+        return drop.getDropCacheCount();
+    }
+
 }

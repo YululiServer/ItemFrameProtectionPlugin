@@ -119,22 +119,25 @@ class ItemFrameList implements DataInteface {
     public void forceCacheToSQL(){
 
         try {
+            List<FrameData> frameData = new ArrayList<>();
             synchronized (frameDataList){
 
-                for (FrameData data : frameDataList){
-
-                    PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
-                    statement.setString(1, data.getItemFrameUUID().toString());
-                    statement.setString(2, new Gson().toJson(data.getFrameItem()));
-                    statement.setString(3, data.getProtectUser().toString());
-                    statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
-                    statement.setBoolean(5, data.isActive());
-                    statement.execute();
-                    statement.close();
-
-                }
-
+                frameData.addAll(frameDataList);
                 frameDataList.clear();
+
+            }
+
+            for (FrameData data : frameData){
+
+                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
+                statement.setString(1, data.getItemFrameUUID().toString());
+                statement.setString(2, new Gson().toJson(data.getFrameItem()));
+                statement.setString(3, data.getProtectUser().toString());
+                statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
+                statement.setBoolean(5, data.isActive());
+                statement.execute();
+                statement.close();
+
             }
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
@@ -232,15 +235,14 @@ class ItemFrameList implements DataInteface {
                     }
                     i++;
                 }
-
-                if (!flag){
-                    PreparedStatement statement = con.prepareStatement("UPDATE WhereList SET Active = 0 WHERE ItemFrameUUID = ?");
-                    statement.setString(1, itemFrameUUID.toString());
-                    statement.execute();
-                    statement.close();
-                }
             }
 
+            if (!flag){
+                PreparedStatement statement = con.prepareStatement("UPDATE WhereList SET Active = 0 WHERE ItemFrameUUID = ?");
+                statement.setString(1, itemFrameUUID.toString());
+                statement.execute();
+                statement.close();
+            }
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
