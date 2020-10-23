@@ -1,5 +1,6 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -9,35 +10,40 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class ItemFrameCommandTab implements TabExecutor {
+class IFPCommandTab implements TabExecutor {
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        return true;
+
+        return args.length <= 2;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> list = new ArrayList<>();
-        if (sender instanceof Player){
-            Player player = (Player)sender;
-            if (args.length == 1){
 
-                if (player.hasPermission("ifp.op")){
-                    list.add("count");
-                    list.add("user");
-                }
+        if (args.length == 1){
 
-                return list;
+            list.add("all");
+            Player player = (Player) sender;
+
+            if (player.hasPermission("ifp.op")){
+                list.add("admin");
+                list.add("user");
             }
 
-            if (args.length == 2 && player.hasPermission("ifp.op")){
+        }
 
-                for (Player p : sender.getServer().getOnlinePlayers()){
-                    list.add(p.getName());
-                }
+        if (args.length == 2 && args[0].toLowerCase().equals("user")){
 
-                return list;
+            Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
+
+            for (Player player : players){
+
+                list.add(player.getName());
+
             }
+
         }
 
         return list;
