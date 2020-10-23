@@ -238,7 +238,7 @@ class ItemFrameList implements DataInteface {
             }
 
             if (!flag){
-                PreparedStatement statement = con.prepareStatement("UPDATE WhereList SET Active = 0 WHERE ItemFrameUUID = ?");
+                PreparedStatement statement = con.prepareStatement("UPDATE ItemFrameTable1 SET Active = 0 WHERE ItemFrameUUID = ?");
                 statement.setString(1, itemFrameUUID.toString());
                 statement.execute();
                 statement.close();
