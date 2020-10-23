@@ -87,7 +87,7 @@ class IFPCommand implements CommandExecutor {
                         TextComponent text1 = new TextComponent(dataText);
                         TextComponent click1 = new TextComponent(ChatColor.AQUA + "[Teleport]");
                         click1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp "+ location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ()));
-                        text.addExtra(click1);
+                        text1.addExtra(click1);
                         sender.sendMessage(text1);
 
                     } else {
@@ -123,7 +123,51 @@ class IFPCommand implements CommandExecutor {
                 }
 
                 if (args[0].toLowerCase().equals("all")){
-                    sender.sendMessage(ChatColor.YELLOW + "準備中...");
+                    List<FrameData> list = api.getListByFrameData(true);
+                    for (FrameData data : list){
+
+                        Entity entity = Bukkit.getEntity(data.getItemFrameUUID());
+
+                        if (entity == null){
+                            continue;
+                        }
+
+                        if (!data.getProtectUser().equals(player.getUniqueId())){
+                            continue;
+                        }
+
+                        Location location = entity.getLocation();
+
+                        StringBuffer sb = new StringBuffer();
+
+                        sb.append("ワールド名 : ");
+                        sb.append(location.getWorld().getName());
+                        sb.append(" X: ");
+                        sb.append(location.getBlockX());
+                        sb.append(" Y: ");
+                        sb.append(location.getBlockY());
+                        sb.append(" Z: ");
+                        sb.append(location.getBlockZ());
+
+                        String dataText = sb.toString();
+
+                        if (player.hasPermission("ifp.op")){
+
+                            TextComponent text1 = new TextComponent(dataText);
+                            TextComponent click1 = new TextComponent(ChatColor.AQUA + "[Teleport]");
+                            click1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp "+ location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ()));
+                            text1.addExtra(click1);
+                            sender.sendMessage(text1);
+
+                        } else {
+                            sender.sendMessage(dataText);
+                        }
+
+                    }
+                }
+
+                if (args[0].toLowerCase().equals("forcecache")){
+                    api.cacheToSQL();
                 }
             }
 
