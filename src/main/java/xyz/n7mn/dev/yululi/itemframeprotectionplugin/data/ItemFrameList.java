@@ -2,9 +2,12 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
 import com.google.gson.Gson;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import xyz.acrylicstyle.paper.Paper;
+import xyz.acrylicstyle.paper.nbt.NBTTagCompound;
 
 import java.awt.*;
 import java.sql.Connection;
@@ -131,7 +134,15 @@ class ItemFrameList implements DataInteface {
 
                 PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
                 statement.setString(1, data.getItemFrameUUID().toString());
-                statement.setString(2, new Gson().toJson(data.getFrameItem()));
+
+
+                // System.out.println("debug : " + data.getFrameItem().getType());
+                ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), Paper.itemStack(data.getFrameItem()).getTag());
+
+                Gson gson = new Gson();
+                String s = gson.toJson(itemStackJSON);
+
+                statement.setString(2, s);
                 statement.setString(3, data.getProtectUser().toString());
                 statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
                 statement.setBoolean(5, data.isActive());
@@ -156,7 +167,14 @@ class ItemFrameList implements DataInteface {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1");
             ResultSet set = statement.executeQuery();
             while (set.next()){
-                FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), new Gson().fromJson(set.getString("FrameItem"), ItemStack.class), UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
+
+                ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
+
+                ItemStack stack = new ItemStack(item.getType());
+                stack.setAmount(item.getAmount());
+                Paper.itemStack(stack).setTag(item.getTag());
+
+                FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
                 dataList.add(data);
             }
         } catch (SQLException e){

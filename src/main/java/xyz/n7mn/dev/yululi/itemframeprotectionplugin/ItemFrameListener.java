@@ -77,18 +77,19 @@ class ItemFrameListener implements Listener {
                     }
                 } else {
                     // 新規保護
+                    if (frame.getItem().getType() == Material.AIR){
+                        frame.setItem(player.getInventory().getItemInMainHand());
+                    }
+
                     FrameData data = new FrameData();
 
                     data.setItemFrameUUID(frame.getUniqueId());
-                    data.setFrameItem(player.getInventory().getItemInMainHand());
+                    data.setFrameItem(frame.getItem());
                     data.setProtectUser(player.getUniqueId());
                     data.setCreateDate(new Date());
                     data.setActive(true);
 
                     api.addItemFrame(data);
-                    if (frame.getItem().getType() == Material.AIR){
-                        frame.setItem(player.getInventory().getItemInMainHand());
-                    }
                     player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
                 }
 
