@@ -2,12 +2,10 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
 import com.google.gson.Gson;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import xyz.acrylicstyle.paper.Paper;
-import xyz.acrylicstyle.paper.nbt.NBTTagCompound;
 
 import java.awt.*;
 import java.sql.Connection;

@@ -1,6 +1,5 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
@@ -11,8 +10,14 @@ import java.sql.*;
 
 public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
+
+
     private Connection con = null;
     private DataAPI dataAPI = null;
+
+    public DataAPI getDataAPI() {
+        return dataAPI;
+    }
 
     @Override
     public void onEnable() {

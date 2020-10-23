@@ -14,8 +14,6 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
