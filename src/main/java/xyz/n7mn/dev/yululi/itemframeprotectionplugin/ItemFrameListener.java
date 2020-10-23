@@ -14,6 +14,8 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
@@ -44,7 +46,6 @@ class ItemFrameListener implements Listener {
         try {
 
             boolean foundFlag = false;
-
             FrameData foundData = null;
 
             List<FrameData> list = api.getListByFrameData(true);
@@ -69,6 +70,8 @@ class ItemFrameListener implements Listener {
                         if (player.hasPermission("ifp.op")){
                             api.deleteTableByFrame(frame.getUniqueId());
                             player.sendMessage(ChatColor.YELLOW + "保護を代理解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
+                        } else {
+                            player.sendMessage(ChatColor.RED + "他の人が保護しています。");
                         }
 
                     }
@@ -167,26 +170,13 @@ class ItemFrameListener implements Listener {
         Item itemDrop = e.getItemDrop();
         Location location = itemDrop.getLocation();
 
-        World world = Bukkit.getServer().getWorld(location.getWorld().getUID());
-        List<Entity> entities = world.getEntities();
-        for (Entity entity : entities){
+        DropItemData data = new DropItemData();
+        data.setDropItemUUID(itemDrop.getUniqueId());
+        data.setWorldUUID(location.getWorld().getUID());
+        data.setDropDate(new Date());
+        data.setDropUser(e.getPlayer().getUniqueId());
+        api.addDropItem(data);
 
-            if (entity.getType() != EntityType.ITEM_FRAME){
-                continue;
-            }
-
-            if (location.distance(entity.getLocation()) <= 6){
-
-                DropItemData data = new DropItemData();
-                data.setDropItemUUID(itemDrop.getUniqueId());
-                data.setWorldUUID(location.getWorld().getUID());
-                data.setDropDate(new Date());
-                data.setDropUser(e.getPlayer().getUniqueId());
-
-                api.addDropItem(data);
-                return;
-            }
-        }
     }
 
 

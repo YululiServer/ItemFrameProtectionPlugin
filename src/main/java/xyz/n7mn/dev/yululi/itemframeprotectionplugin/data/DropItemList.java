@@ -155,7 +155,7 @@ class DropItemList implements DataInteface {
         try {
             synchronized (dropItemDataList){
 
-                if (dropItemDataList.size() > 512){
+                if (dropItemDataList.size() > 20000){
                     forceCacheToSQL();
                 }
 
