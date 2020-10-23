@@ -78,6 +78,8 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new ItemFrameListener(dataAPI), this);
 
+            new AutoRemoveTimer(dataAPI, this).runTaskLaterAsynchronously(this, 0L);
+
             getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 
         } catch (Exception e){
