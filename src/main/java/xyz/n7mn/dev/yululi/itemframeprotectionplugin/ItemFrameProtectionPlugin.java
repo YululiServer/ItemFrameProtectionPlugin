@@ -99,7 +99,10 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
             try {
                 if (con != null){
+
+                    dataAPI.cacheToSQL();
                     con.close();
+
                 }
             } catch (Exception e){
 

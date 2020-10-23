@@ -64,7 +64,7 @@ class AutoRemoveTimer extends BukkitRunnable {
                 FrameDataList.clear();
                 DropItemList.clear();
 
-                new AutoRemoveTimer(api, plugin).runTaskLaterAsynchronously(plugin, 240L);
+                new AutoRemoveTimer(api, plugin).runTaskLaterAsynchronously(plugin, 6000L);
             } catch (Exception e){
 
                 if (plugin.getConfig().getBoolean("errorPrint")){
