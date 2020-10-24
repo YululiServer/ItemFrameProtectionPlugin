@@ -209,7 +209,7 @@ class ItemFrameListener implements Listener {
         if (e.getDamager() instanceof Player){
 
 
-            System.out.println("ああ");
+            //System.out.println("ああ");
             Player player = (Player) e.getDamager();
             PlayerInventory inventory = player.getInventory();
 
@@ -233,7 +233,7 @@ class ItemFrameListener implements Listener {
 
             }
 
-            System.out.println("いい");
+            //System.out.println("いい");
 
             List<DropItemData> itemList = api.getListByDropItem();
 

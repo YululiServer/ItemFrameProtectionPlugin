@@ -199,7 +199,13 @@ class ItemFrameList implements DataInteface {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1 WHERE Active = 1");
             ResultSet set = statement.executeQuery();
             while (set.next()){
-                FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), new Gson().fromJson(set.getString("FrameItem"), ItemStack.class), UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
+
+                ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
+                ItemStack stack = new ItemStack(item.getType());
+                stack.setAmount(item.getAmount());
+                Paper.itemStack(stack).setTag(item.getTag());
+
+                FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
                 dataList.add(data);
             }
         } catch (SQLException e){
