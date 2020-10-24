@@ -33,12 +33,21 @@ class ItemFrameListener implements Listener {
         this.api = api;
     }
 
+    private UUID uuid = null;
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
 
         if (!(e.getRightClicked() instanceof ItemFrame)){
             return;
         }
+
+        if (uuid != null && e.getRightClicked().getUniqueId().equals(uuid)){
+            uuid = null;
+            return;
+        }
+
+        uuid = e.getRightClicked().getUniqueId();
 
         // スネークしながら右クリックでロックしたり解除するようにする。
         ItemFrame frame = (ItemFrame) e.getRightClicked();
@@ -109,6 +118,7 @@ class ItemFrameListener implements Listener {
                 }
 
             }
+
 
         } catch (Exception ex){
             if (plugin.getConfig().getBoolean("errorPrint")){
