@@ -42,9 +42,9 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        if (uuid != null && e.getRightClicked().getUniqueId().equals(uuid)){
+        if (uuid != null && e.getRightClicked().getUniqueId().equals(uuid) && e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR){
             uuid = null;
-            e.getPlayer().getInventory().getItemInMainHand().setAmount(e.getPlayer().getInventory().getItemInMainHand().getAmount() + 1);
+            e.setCancelled(true);
             return;
         }
 
@@ -124,7 +124,9 @@ class ItemFrameListener implements Listener {
 
             }
 
-            e.getPlayer().getInventory().getItemInMainHand().setAmount(e.getPlayer().getInventory().getItemInMainHand().getAmount() + 1);
+
+            // ItemStack itemInMainHand = e.getPlayer().getInventory().getItemInMainHand();
+            // e.getPlayer().getInventory().addItem(itemInMainHand);
 
 
         } catch (Exception ex){
@@ -135,6 +137,7 @@ class ItemFrameListener implements Listener {
         }
 
 
+        uuid = null;
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
@@ -154,12 +157,13 @@ class ItemFrameListener implements Listener {
             }
         }
 
+        ItemStack item = frame.getItem();
+
         // 無限増殖対策
         if (frame.getItem().getType() != Material.AIR){
             ItemStack stack = new ItemStack(Material.AIR);
             frame.setItem(stack);
         }
-
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -204,18 +208,32 @@ class ItemFrameListener implements Listener {
 
         if (e.getDamager() instanceof Player){
 
+
+            System.out.println("ああ");
             Player player = (Player) e.getDamager();
             PlayerInventory inventory = player.getInventory();
 
+            ItemStack frameData = frame.getItem();
+
             for (int i = 0; i < inventory.getSize(); i++){
 
-                if (ItemStackEqual(inventory.getItem(i), frame.getItem())){
+                if (inventory.getItem(i) == null){
+                    continue;
+                }
+
+                if (inventory.getItem(i).getType() == Material.AIR){
+                    continue;
+                }
+
+                if (inventory.getItem(i).getType() == frame.getItem().getType() && ItemStackEqual(inventory.getItem(i), frame.getItem())){
                     frame.setItem(new ItemStack(Material.AIR));
                     e.setCancelled(true);
                     return;
                 }
 
             }
+
+            System.out.println("いい");
 
             List<DropItemData> itemList = api.getListByDropItem();
 
@@ -225,7 +243,9 @@ class ItemFrameListener implements Listener {
                 if (entity != null){
                     Item i = (Item) entity;
 
-                    if (ItemStackEqual(frame.getItem(), i.getItemStack())){
+                    if (i.getItemStack().getType() == frame.getItem().getType() && ItemStackEqual(frame.getItem(), i.getItemStack())){
+
+
 
                         frame.setItem(new ItemStack(Material.AIR));
                         e.setCancelled(true);
@@ -234,6 +254,9 @@ class ItemFrameListener implements Listener {
                     }
                 }
             }
+
+            player.getInventory().addItem(frameData);
+
         }
 
     }
