@@ -13,6 +13,7 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
@@ -21,6 +22,7 @@ import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 class ItemFrameListener implements Listener {
 
@@ -72,10 +74,12 @@ class ItemFrameListener implements Listener {
                             player.sendMessage(ChatColor.RED + "他の人が保護しています。");
                         }
 
+                        e.setCancelled(true);
                     }
+
                 } else {
                     // 新規保護
-                    if (frame.getItem().getType() == Material.AIR){
+                    if (frame.getItem().getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() != Material.AIR){
                         frame.setItem(player.getInventory().getItemInMainHand());
                     }
 
@@ -89,13 +93,19 @@ class ItemFrameListener implements Listener {
 
                     api.addItemFrame(data);
                     player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
+                    e.setCancelled(true);
                 }
-
-                e.setCancelled(true);
             } else {
 
                 if (foundFlag){
                     e.setCancelled(true);
+                }
+
+                if (frame.getItem().getType() == Material.AIR && e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR){
+
+                    frame.setItem(e.getPlayer().getInventory().getItemInMainHand());
+                    e.setCancelled(true);
+
                 }
 
             }
@@ -127,6 +137,12 @@ class ItemFrameListener implements Listener {
             }
         }
 
+        // 無限増殖対策
+        if (frame.getItem().getType() != Material.AIR){
+            ItemStack stack = new ItemStack(Material.AIR);
+            frame.setItem(stack);
+        }
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -143,6 +159,13 @@ class ItemFrameListener implements Listener {
                 e.setCancelled(true);
                 return;
             }
+        }
+
+        if (frame.getItem().getType() != Material.AIR){
+
+            frame.setItem(new ItemStack(Material.AIR));
+            e.setCancelled(true);
+
         }
     }
 
@@ -161,6 +184,41 @@ class ItemFrameListener implements Listener {
                 return;
             }
         }
+
+        if (e.getDamager() instanceof Player){
+
+            Player player = (Player) e.getDamager();
+            PlayerInventory inventory = player.getInventory();
+
+            for (int i = 0; i < inventory.getSize(); i++){
+
+                if (ItemStackEqual(inventory.getItem(i), frame.getItem())){
+                    frame.setItem(new ItemStack(Material.AIR));
+                    e.setCancelled(true);
+                    return;
+                }
+
+            }
+
+            List<DropItemData> itemList = api.getListByDropItem();
+
+            for (DropItemData item : itemList){
+                Entity entity = Bukkit.getEntity(item.getDropItemUUID());
+
+                if (entity != null){
+                    Item i = (Item) entity;
+
+                    if (ItemStackEqual(frame.getItem(), i.getItemStack())){
+
+                        frame.setItem(new ItemStack(Material.AIR));
+                        e.setCancelled(true);
+                        return;
+
+                    }
+                }
+            }
+        }
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
