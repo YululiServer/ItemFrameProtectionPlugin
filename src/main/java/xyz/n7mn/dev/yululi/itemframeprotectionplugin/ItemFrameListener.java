@@ -44,6 +44,7 @@ class ItemFrameListener implements Listener {
 
         if (uuid != null && e.getRightClicked().getUniqueId().equals(uuid)){
             uuid = null;
+            e.getPlayer().getInventory().getItemInMainHand().setAmount(e.getPlayer().getInventory().getItemInMainHand().getAmount() + 1);
             return;
         }
 
@@ -86,6 +87,7 @@ class ItemFrameListener implements Listener {
                         e.setCancelled(true);
                     }
 
+                    return;
                 } else {
                     // 新規保護
                     if (frame.getItem().getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() != Material.AIR){
@@ -103,21 +105,26 @@ class ItemFrameListener implements Listener {
                     api.addItemFrame(data);
                     player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
                     e.setCancelled(true);
+
+                    return;
                 }
             } else {
 
                 if (foundFlag){
                     e.setCancelled(true);
+                    return;
                 }
 
                 if (frame.getItem().getType() == Material.AIR && e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR){
 
                     frame.setItem(e.getPlayer().getInventory().getItemInMainHand());
                     e.setCancelled(true);
-
+                    return;
                 }
 
             }
+
+            e.getPlayer().getInventory().getItemInMainHand().setAmount(e.getPlayer().getInventory().getItemInMainHand().getAmount() + 1);
 
 
         } catch (Exception ex){
