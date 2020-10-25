@@ -26,6 +26,8 @@ class AutoRemoveTimer extends BukkitRunnable {
     public void run() {
 
         if (plugin.isEnabled()){
+
+
             try {
                 api.cacheToSQL();
 
@@ -65,7 +67,7 @@ class AutoRemoveTimer extends BukkitRunnable {
                 DropItemList.clear();
 
                 if (plugin.isEnabled()){
-                    new AutoRemoveTimer(api, plugin).runTaskLaterAsynchronously(plugin, 6000L);
+                    new AutoRemoveTimer(api, plugin).runTaskLaterAsynchronously(plugin, 1200L);
                 }
 
             } catch (Exception e){
