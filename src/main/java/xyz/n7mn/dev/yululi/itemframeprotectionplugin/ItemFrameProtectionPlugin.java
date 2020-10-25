@@ -7,7 +7,6 @@ import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-
 public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
 
@@ -17,6 +16,10 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
     public DataAPI getDataAPI() {
         return dataAPI;
+    }
+
+    void setConnect(Connection con ){
+        this.con = con;
     }
 
     @Override
@@ -35,6 +38,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             if (getConfig().getBoolean("useMySQL")) {
 
                 con = DriverManager.getConnection("jdbc:mysql://" + MySQLServer + "/" + MySQLDatabase + MySQLOption, MySQLUsername, MySQLPassword);
+                con.setAutoCommit(true);
                 dataAPI = new DataAPI(con, this);
 
                 try {
@@ -84,6 +88,7 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new ItemFrameListener(dataAPI), this);
 
             new AutoRemoveTimer(dataAPI, this).runTaskLaterAsynchronously(this, 0L);
+            new AutoSQLConnectCheckTimer(this, con).runTaskLaterAsynchronously(this, 0L);
 
             getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 

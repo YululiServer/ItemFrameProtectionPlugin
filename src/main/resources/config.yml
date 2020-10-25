@@ -14,4 +14,4 @@ MySQLServer: '' # サーバー名
 MySQLUsername: '' # ユーザー名
 MySQLPassword: '' # パスワード
 MySQLDatabase: '' # データベース名
-MySQLOption: '?allowPublicKeyRetrieval=true&useSSL=false' # オプション (MySQL 5.6以降にはデフォで書かれているのが必須らしい。)
+MySQLOption: '?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false' # オプション (MySQL 5.6以降にはデフォで書かれているのが必須らしい。)
