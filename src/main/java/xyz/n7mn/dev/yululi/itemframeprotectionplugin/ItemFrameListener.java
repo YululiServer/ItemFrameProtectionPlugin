@@ -35,7 +35,7 @@ class ItemFrameListener implements Listener {
 
     private UUID uuid = null;
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler // (priority = EventPriority.HIGHEST)
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
 
         if (!(e.getRightClicked() instanceof ItemFrame)){

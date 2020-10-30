@@ -101,7 +101,7 @@ class IFPCommand implements CommandExecutor {
 
             if (args.length == 1){
 
-                if (args[0].toLowerCase().equals("admin")){
+                if (args[0].toLowerCase().equals("admin") && player.hasPermission("ifp.op")){
                     List<FrameData> list = api.getListByFrameData(false);
                     sender.sendMessage("---- ItemFrameProtectPlugin Ver " + plugin.getDescription().getVersion() + " ----");
                     sender.sendMessage(ChatColor.GREEN + "保護件数 : " + list.size() + " 件");
@@ -211,17 +211,11 @@ class IFPCommand implements CommandExecutor {
 
                         String dataText = sb.toString();
 
-                        if (player.hasPermission("ifp.op")){
-
-                            TextComponent text1 = new TextComponent(dataText);
-                            TextComponent click1 = new TextComponent(ChatColor.AQUA + "[Teleport]");
-                            click1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp "+ location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ()));
-                            text1.addExtra(click1);
-                            sender.sendMessage(text1);
-
-                        } else {
-                            sender.sendMessage(dataText);
-                        }
+                        TextComponent text1 = new TextComponent(dataText);
+                        TextComponent click1 = new TextComponent(ChatColor.AQUA + "[Teleport]");
+                        click1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp "+ location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ()));
+                        text1.addExtra(click1);
+                        sender.sendMessage(text1);
 
                     }
                 }
