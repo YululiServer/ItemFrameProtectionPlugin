@@ -68,6 +68,7 @@ class AutoRemoveTimer extends BukkitRunnable {
 
                 if (plugin.isEnabled()){
                     new AutoRemoveTimer(api, plugin).runTaskLaterAsynchronously(plugin, 1200L);
+                    System.out.println("test");
                 }
 
             } catch (Exception e){

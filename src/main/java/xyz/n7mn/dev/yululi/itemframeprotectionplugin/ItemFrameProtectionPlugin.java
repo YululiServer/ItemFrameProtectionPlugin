@@ -3,6 +3,7 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
+import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DebugTimer;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,6 +90,10 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
             new AutoRemoveTimer(dataAPI, this).runTaskLaterAsynchronously(this, 0L);
             new AutoSQLConnectCheckTimer(this, con).runTaskLaterAsynchronously(this, 0L);
+
+            if (this.getDescription().getVersion().endsWith("-dev")){
+                new DebugTimer(dataAPI, this).runTaskLaterAsynchronously(this, 0L);
+            }
 
             getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 

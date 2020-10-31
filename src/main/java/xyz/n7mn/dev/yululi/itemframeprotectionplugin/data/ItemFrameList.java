@@ -1,6 +1,7 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
 import com.google.gson.Gson;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -120,34 +121,88 @@ class ItemFrameList implements DataInteface {
     public void forceCacheToSQL(){
 
         try {
-            List<FrameData> frameData = new ArrayList<>();
-            synchronized (frameDataList){
+            if (!plugin.isEnabled()){
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        List<FrameData> frameData = new ArrayList<>();
+                        synchronized (frameDataList){
 
-                frameData.addAll(frameDataList);
-                frameDataList.clear();
+                            frameData.addAll(frameDataList);
+                            frameDataList.clear();
 
+                        }
+
+                        try {
+                            for (FrameData data : frameData){
+
+                                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
+                                statement.setString(1, data.getItemFrameUUID().toString());
+
+
+                                // System.out.println("debug : " + data.getFrameItem().getType());
+                                ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), Paper.itemStack(data.getFrameItem()).getTag());
+
+                                Gson gson = new Gson();
+                                String s = gson.toJson(itemStackJSON);
+
+                                statement.setString(2, s);
+                                statement.setString(3, data.getProtectUser().toString());
+                                statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
+                                statement.setBoolean(5, data.isActive());
+                                statement.execute();
+                                statement.close();
+
+                            }
+                        } catch (Exception e){
+                            if (plugin.getConfig().getBoolean("errorPrint")){
+                                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }.runTaskLaterAsynchronously(plugin, 0L);
+                return;
             }
 
-            for (FrameData data : frameData){
+            new Thread(()->{
+                List<FrameData> frameData = new ArrayList<>();
+                synchronized (frameDataList){
 
-                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
-                statement.setString(1, data.getItemFrameUUID().toString());
+                    frameData.addAll(frameDataList);
+                    frameDataList.clear();
+
+                }
+
+                try {
+                    for (FrameData data : frameData){
+
+                        PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
+                        statement.setString(1, data.getItemFrameUUID().toString());
 
 
-                // System.out.println("debug : " + data.getFrameItem().getType());
-                ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), Paper.itemStack(data.getFrameItem()).getTag());
+                        // System.out.println("debug : " + data.getFrameItem().getType());
+                        ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), Paper.itemStack(data.getFrameItem()).getTag());
 
-                Gson gson = new Gson();
-                String s = gson.toJson(itemStackJSON);
+                        Gson gson = new Gson();
+                        String s = gson.toJson(itemStackJSON);
 
-                statement.setString(2, s);
-                statement.setString(3, data.getProtectUser().toString());
-                statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
-                statement.setBoolean(5, data.isActive());
-                statement.execute();
-                statement.close();
+                        statement.setString(2, s);
+                        statement.setString(3, data.getProtectUser().toString());
+                        statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
+                        statement.setBoolean(5, data.isActive());
+                        statement.execute();
+                        statement.close();
 
-            }
+                    }
+                } catch (Exception e){
+                    if (plugin.getConfig().getBoolean("errorPrint")){
+                        plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
@@ -229,11 +284,10 @@ class ItemFrameList implements DataInteface {
             synchronized (frameDataList){
 
                 frameDataList.add(data);
+
                 if (frameDataList.size() > 15){
                     this.forceCacheToSQL();
                 }
-
-
             }
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
@@ -246,25 +300,13 @@ class ItemFrameList implements DataInteface {
     public void deleteFrameData(UUID itemFrameUUID){
 
         try {
-            boolean flag = false;
-            synchronized (frameDataList){
-                int i = 0;
-                for (FrameData data : frameDataList){
-                    if (data.getItemFrameUUID().equals(itemFrameUUID)){
-                        frameDataList.remove(i);
-                        flag = true;
-                        break;
-                    }
-                    i++;
-                }
-            }
+            this.forceCacheToSQL();
 
-            if (!flag){
-                PreparedStatement statement = con.prepareStatement("UPDATE ItemFrameTable1 SET Active = 0 WHERE ItemFrameUUID = ?");
-                statement.setString(1, itemFrameUUID.toString());
-                statement.execute();
-                statement.close();
-            }
+            PreparedStatement statement = con.prepareStatement("UPDATE ItemFrameTable1 SET Active = 0 WHERE ItemFrameUUID = ?");
+            statement.setString(1, itemFrameUUID.toString());
+            statement.execute();
+            statement.close();
+
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
