@@ -35,7 +35,7 @@ class ItemFrameListener implements Listener {
 
     private UUID uuid = null;
 
-    @EventHandler // (priority = EventPriority.HIGHEST)
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
 
         if (!(e.getRightClicked() instanceof ItemFrame)){
@@ -75,6 +75,9 @@ class ItemFrameListener implements Listener {
                     if (foundData.getProtectUser().equals(player.getUniqueId())){
                         api.deleteTableByFrame(frame.getUniqueId());
                         player.sendMessage(ChatColor.GREEN + "保護解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
+
+                        e.setCancelled(true);
+                        return;
                     } else {
 
                         if (player.hasPermission("ifp.op")){
@@ -85,9 +88,9 @@ class ItemFrameListener implements Listener {
                         }
 
                         e.setCancelled(true);
+                        return;
                     }
 
-                    return;
                 } else {
                     // 新規保護
                     if (frame.getItem().getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() != Material.AIR){
