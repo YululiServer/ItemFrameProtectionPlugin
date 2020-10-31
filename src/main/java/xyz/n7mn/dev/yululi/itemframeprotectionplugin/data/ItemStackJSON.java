@@ -1,24 +1,35 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
 import org.bukkit.Material;
-import xyz.acrylicstyle.paper.nbt.NBTTagCompound;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.MaterialData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ItemStackJSON {
 
     private Material type;
     private int amount;
-    private NBTTagCompound tag;
+    private ItemMeta itemMeta;
+    private MaterialData materialData;
+    private List<String> lore;
+
 
     public ItemStackJSON(){
         type = Material.AIR;
         amount = 0;
-        tag = null;
+        itemMeta = null;
+        materialData = null;
+        lore = new ArrayList<>();
     }
 
-    public ItemStackJSON(Material type, int amount, NBTTagCompound tag){
+    public ItemStackJSON(Material type, int amount, ItemMeta itemMeta, MaterialData materialData, List<String> lore){
         this.type = type;
         this.amount = amount;
-        this.tag = tag;
+        this.itemMeta = itemMeta;
+        this.materialData = materialData;
+        this.lore = lore;
     }
 
     public Material getType() {
@@ -37,11 +48,27 @@ public class ItemStackJSON {
         this.amount = amount;
     }
 
-    public NBTTagCompound getTag() {
-        return tag;
+    public ItemMeta getItemMeta() {
+        return itemMeta;
     }
 
-    public void setTag(NBTTagCompound tag) {
-        this.tag = tag;
+    public void setItemMeta(ItemMeta itemMeta) {
+        this.itemMeta = itemMeta;
+    }
+
+    public MaterialData getMaterialData() {
+        return materialData;
+    }
+
+    public void setMaterialData(MaterialData materialData) {
+        this.materialData = materialData;
+    }
+
+    public List<String> getLore() {
+        return lore;
+    }
+
+    public void setLore(List<String> lore) {
+        this.lore = lore;
     }
 }

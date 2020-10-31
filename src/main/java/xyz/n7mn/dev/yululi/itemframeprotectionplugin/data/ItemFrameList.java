@@ -1,9 +1,21 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
+import com.destroystokyo.paper.Namespaced;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import xyz.acrylicstyle.paper.Paper;
@@ -121,7 +133,7 @@ class ItemFrameList implements DataInteface {
     public void forceCacheToSQL(){
 
         try {
-            if (!plugin.isEnabled()){
+            if (plugin.isEnabled()){
                 new BukkitRunnable() {
                     @Override
                     public void run() {
@@ -141,7 +153,7 @@ class ItemFrameList implements DataInteface {
 
 
                                 // System.out.println("debug : " + data.getFrameItem().getType());
-                                ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), Paper.itemStack(data.getFrameItem()).getTag());
+                                ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), data.getFrameItem().getItemMeta(), data.getFrameItem().getData(), data.getFrameItem().getLore());
 
                                 Gson gson = new Gson();
                                 String s = gson.toJson(itemStackJSON);
@@ -182,7 +194,7 @@ class ItemFrameList implements DataInteface {
 
 
                         // System.out.println("debug : " + data.getFrameItem().getType());
-                        ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), Paper.itemStack(data.getFrameItem()).getTag());
+                        ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), data.getFrameItem().getItemMeta(), data.getFrameItem().getData(), data.getFrameItem().getLore());
 
                         Gson gson = new Gson();
                         String s = gson.toJson(itemStackJSON);
@@ -225,7 +237,9 @@ class ItemFrameList implements DataInteface {
 
                 ItemStack stack = new ItemStack(item.getType());
                 stack.setAmount(item.getAmount());
-                Paper.itemStack(stack).setTag(item.getTag());
+                stack.setData(item.getMaterialData());
+                stack.setItemMeta(item.getItemMeta());
+                stack.setLore(item.getLore());
 
                 FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
                 dataList.add(data);
@@ -258,7 +272,9 @@ class ItemFrameList implements DataInteface {
                 ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
                 ItemStack stack = new ItemStack(item.getType());
                 stack.setAmount(item.getAmount());
-                Paper.itemStack(stack).setTag(item.getTag());
+                stack.setData(item.getMaterialData());
+                stack.setItemMeta(item.getItemMeta());
+                stack.setLore(item.getLore());
 
                 FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
                 dataList.add(data);
@@ -285,7 +301,7 @@ class ItemFrameList implements DataInteface {
 
                 frameDataList.add(data);
 
-                if (frameDataList.size() > 15){
+                if (frameDataList.size() > 150){
                     this.forceCacheToSQL();
                 }
             }
