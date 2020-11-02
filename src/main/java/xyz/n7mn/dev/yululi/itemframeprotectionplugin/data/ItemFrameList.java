@@ -1,31 +1,14 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
-import com.destroystokyo.paper.Namespaced;
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
-import net.md_5.bungee.api.chat.BaseComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import xyz.acrylicstyle.paper.Paper;
 
-import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.List;
 
 class ItemFrameList implements DataInteface {
@@ -132,88 +115,32 @@ class ItemFrameList implements DataInteface {
     @Override
     public void forceCacheToSQL(){
 
+        Gson gson = new Gson();
+
         try {
-            if (plugin.isEnabled()){
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        List<FrameData> frameData = new ArrayList<>();
-                        synchronized (frameDataList){
+            List<FrameData> frameData = new ArrayList<>();
+            synchronized (frameDataList){
 
-                            frameData.addAll(frameDataList);
-                            frameDataList.clear();
+                frameData.addAll(frameDataList);
+                frameDataList.clear();
 
-                        }
-
-                        try {
-                            for (FrameData data : frameData){
-
-                                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
-                                statement.setString(1, data.getItemFrameUUID().toString());
-
-
-                                // System.out.println("debug : " + data.getFrameItem().getType());
-                                ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), data.getFrameItem().getItemMeta(), data.getFrameItem().getData(), data.getFrameItem().getLore());
-
-                                Gson gson = new Gson();
-                                String s = gson.toJson(itemStackJSON);
-
-                                statement.setString(2, s);
-                                statement.setString(3, data.getProtectUser().toString());
-                                statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
-                                statement.setBoolean(5, data.isActive());
-                                statement.execute();
-                                statement.close();
-
-                            }
-                        } catch (Exception e){
-                            if (plugin.getConfig().getBoolean("errorPrint")){
-                                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }.runTaskLaterAsynchronously(plugin, 0L);
-                return;
             }
 
-            new Thread(()->{
-                List<FrameData> frameData = new ArrayList<>();
-                synchronized (frameDataList){
+            int i = 0;
+            for (FrameData data : frameData) {
 
-                    frameData.addAll(frameDataList);
-                    frameDataList.clear();
+                PreparedStatement statement_f = con.prepareStatement("INSERT INTO `ItemFrameTable1` (`ItemFrameUUID`, `FrameItem`, `ProtectUser`, `CreateDate`, `Active`) VALUES (?, ?, ?, ?, ?) ");
+                statement_f.setString(1, data.getItemFrameUUID().toString());
+                statement_f.setString(2, gson.toJson(new ItemStackJSON(data.getFrameItem())));
+                statement_f.setString(3, data.getProtectUser().toString());
+                statement_f.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
+                statement_f.setBoolean(5, data.isActive());
 
-                }
+                statement_f.execute();
 
-                try {
-                    for (FrameData data : frameData){
+                statement_f.close();
 
-                        PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
-                        statement.setString(1, data.getItemFrameUUID().toString());
-
-
-                        // System.out.println("debug : " + data.getFrameItem().getType());
-                        ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), data.getFrameItem().getItemMeta(), data.getFrameItem().getData(), data.getFrameItem().getLore());
-
-                        Gson gson = new Gson();
-                        String s = gson.toJson(itemStackJSON);
-
-                        statement.setString(2, s);
-                        statement.setString(3, data.getProtectUser().toString());
-                        statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
-                        statement.setBoolean(5, data.isActive());
-                        statement.execute();
-                        statement.close();
-
-                    }
-                } catch (Exception e){
-                    if (plugin.getConfig().getBoolean("errorPrint")){
-                        plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
+            }
 
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
@@ -224,7 +151,6 @@ class ItemFrameList implements DataInteface {
 
     }
 
-    @Deprecated
     public List<FrameData> getFrameDataList(){
         List<FrameData> dataList = new ArrayList<>();
 
@@ -301,7 +227,7 @@ class ItemFrameList implements DataInteface {
 
                 frameDataList.add(data);
 
-                if (frameDataList.size() > 150){
+                if (frameDataList.size() > 15){
                     this.forceCacheToSQL();
                 }
             }
