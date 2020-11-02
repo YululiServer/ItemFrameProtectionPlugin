@@ -149,7 +149,6 @@ class ItemFrameListener implements Listener {
 
         // 額縁壊されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
-        List<FrameData> list = api.getListByFrameData(true);
 
         FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
         if (itemFrame != null){

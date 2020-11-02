@@ -152,7 +152,7 @@ class ItemFrameList implements DataInteface {
     }
 
     public List<FrameData> getFrameDataList(){
-        List<FrameData> dataList = new ArrayList<>();
+        List<FrameData> dataList = new ArrayList<>(Math.toIntExact(this.getCount()));
 
         synchronized (frameDataList){
             if (frameDataList.size() != 0){
@@ -191,7 +191,7 @@ class ItemFrameList implements DataInteface {
 
     public List<FrameData> getFrameDataListByActive() {
 
-        List<FrameData> dataList = new ArrayList<>();
+        List<FrameData> dataList = new ArrayList<>(Math.toIntExact(this.getCount()));
 
         try {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1 WHERE Active = 1");
@@ -291,7 +291,17 @@ class ItemFrameList implements DataInteface {
 
     public void deleteFrameData(UUID itemFrameUUID){
 
-        this.forceCacheToSQL();
+        synchronized (frameDataList){
+            for (FrameData data : frameDataList){
+
+                if (data.getItemFrameUUID().equals(itemFrameUUID)){
+
+                    frameDataList.remove(data);
+                    return;
+                }
+
+            }
+        }
 
         try {
 
@@ -307,5 +317,32 @@ class ItemFrameList implements DataInteface {
             }
         }
 
+    }
+
+    public long getCount(){
+
+        long count = 0;
+
+        synchronized (frameDataList){
+            count = count + frameDataList.size();
+        }
+
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM ItemFrameTable1;");
+            ResultSet set = statement.executeQuery();
+            if (set.next()){
+
+                count = count + set.getLong("COUNT(*)");
+
+                set.close();
+                statement.close();
+                return count;
+            }
+
+        } catch (SQLException e){
+            return count;
+        }
+
+        return count;
     }
 }

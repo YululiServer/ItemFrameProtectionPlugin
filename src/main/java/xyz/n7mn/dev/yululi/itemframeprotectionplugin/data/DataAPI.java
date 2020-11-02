@@ -64,6 +64,10 @@ public class DataAPI {
 
     }
 
+    public DropItemData getDropItemData(UUID dropItemUUID) {
+        return drop.getDropItemData(dropItemUUID);
+    }
+
     public void addItemFrame(FrameData data){
 
         item.addFrameData(data);
@@ -100,6 +104,14 @@ public class DataAPI {
 
     }
 
+    public long getCountByItemFrame(){
+        return item.getCount();
+    }
+
+    public long getCountByDropItem(){
+        return drop.getCount();
+    }
+
     public void cacheClearByFrame(){
 
         item.forceCacheToSQL();
@@ -120,5 +132,6 @@ public class DataAPI {
     public String getCacheCount(){
         return "Item : " + item.getCacheCount() +" Drop : " + drop.getDropCacheCount();
     }
+
 
 }
