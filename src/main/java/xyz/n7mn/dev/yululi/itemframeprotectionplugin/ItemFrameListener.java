@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
@@ -50,94 +51,90 @@ class ItemFrameListener implements Listener {
 
         uuid = e.getRightClicked().getUniqueId();
 
-        // スネークしながら右クリックでロックしたり解除するようにする。
-        ItemFrame frame = (ItemFrame) e.getRightClicked();
-        Player player = e.getPlayer();
-        try {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                // スネークしながら右クリックでロックしたり解除するようにする。
+                ItemFrame frame = (ItemFrame) e.getRightClicked();
+                Player player = e.getPlayer();
+                try {
 
-            boolean foundFlag = false;
-            FrameData foundData = null;
+                    FrameData foundData = api.getItemFrame(frame.getUniqueId());
+                    boolean foundFlag = (foundData != null);
 
-            List<FrameData> list = api.getListByFrameData(true);
-            for (FrameData data : list){
-                if (data.getItemFrameUUID().equals(frame.getUniqueId())){
-                    foundFlag = true;
-                    foundData = data;
-                    break;
-                }
-            }
+                    if (player.isSneaking()){
 
-            if (player.isSneaking()){
+                        if (foundFlag){
+                            // 保護解除
 
-                if (foundFlag){
-                    // 保護解除
+                            if (foundData.getProtectUser().equals(player.getUniqueId())){
+                                api.deleteTableByFrame(frame.getUniqueId());
+                                player.sendMessage(ChatColor.GREEN + "保護解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
 
-                    if (foundData.getProtectUser().equals(player.getUniqueId())){
-                        api.deleteTableByFrame(frame.getUniqueId());
-                        player.sendMessage(ChatColor.GREEN + "保護解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
+                                e.setCancelled(true);
+                                return;
+                            } else {
 
-                        e.setCancelled(true);
-                        return;
+                                if (player.hasPermission("ifp.op")){
+                                    api.deleteTableByFrame(frame.getUniqueId());
+                                    player.sendMessage(ChatColor.YELLOW + "保護を代理解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
+                                } else {
+                                    player.sendMessage(ChatColor.RED + "他の人が保護しています。");
+                                }
+
+                                e.setCancelled(true);
+                                return;
+                            }
+
+                        } else {
+                            // 新規保護
+                            if (frame.getItem().getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() != Material.AIR){
+                                frame.setItem(player.getInventory().getItemInMainHand());
+                            }
+
+                            FrameData data = new FrameData();
+
+                            data.setItemFrameUUID(frame.getUniqueId());
+                            data.setFrameItem(frame.getItem());
+                            data.setProtectUser(player.getUniqueId());
+                            data.setCreateDate(new Date());
+                            data.setActive(true);
+
+                            api.addItemFrame(data);
+                            player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
+                            e.setCancelled(true);
+
+                            return;
+                        }
                     } else {
 
-                        if (player.hasPermission("ifp.op")){
-                            api.deleteTableByFrame(frame.getUniqueId());
-                            player.sendMessage(ChatColor.YELLOW + "保護を代理解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
-                        } else {
-                            player.sendMessage(ChatColor.RED + "他の人が保護しています。");
+                        if (foundFlag){
+                            e.setCancelled(true);
+                            return;
                         }
 
-                        e.setCancelled(true);
-                        return;
+                        if (frame.getItem().getType() == Material.AIR && e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR){
+
+                            frame.setItem(e.getPlayer().getInventory().getItemInMainHand());
+                            e.setCancelled(true);
+                            return;
+                        }
+
                     }
 
-                } else {
-                    // 新規保護
-                    if (frame.getItem().getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() != Material.AIR){
-                        frame.setItem(player.getInventory().getItemInMainHand());
+
+                    // ItemStack itemInMainHand = e.getPlayer().getInventory().getItemInMainHand();
+                    // e.getPlayer().getInventory().addItem(itemInMainHand);
+
+
+                } catch (Exception ex){
+                    if (plugin.getConfig().getBoolean("errorPrint")){
+                        plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                        ex.printStackTrace();
                     }
-
-                    FrameData data = new FrameData();
-
-                    data.setItemFrameUUID(frame.getUniqueId());
-                    data.setFrameItem(frame.getItem());
-                    data.setProtectUser(player.getUniqueId());
-                    data.setCreateDate(new Date());
-                    data.setActive(true);
-
-                    api.addItemFrame(data);
-                    player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
-                    e.setCancelled(true);
-
-                    return;
                 }
-            } else {
-
-                if (foundFlag){
-                    e.setCancelled(true);
-                    return;
-                }
-
-                if (frame.getItem().getType() == Material.AIR && e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR){
-
-                    frame.setItem(e.getPlayer().getInventory().getItemInMainHand());
-                    e.setCancelled(true);
-                    return;
-                }
-
             }
-
-
-            // ItemStack itemInMainHand = e.getPlayer().getInventory().getItemInMainHand();
-            // e.getPlayer().getInventory().addItem(itemInMainHand);
-
-
-        } catch (Exception ex){
-            if (plugin.getConfig().getBoolean("errorPrint")){
-                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                ex.printStackTrace();
-            }
-        }
+        }.runTaskLaterAsynchronously(plugin, 0L);
 
 
         uuid = null;
@@ -153,12 +150,13 @@ class ItemFrameListener implements Listener {
         // 額縁壊されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
         List<FrameData> list = api.getListByFrameData(true);
-        for (FrameData data : list) {
-            if (data.getItemFrameUUID().equals(frame.getUniqueId())) {
-                e.setCancelled(true);
-                return;
-            }
+
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+            e.setCancelled(true);
+            return;
         }
+
 
         ItemStack item = frame.getItem();
 
@@ -177,12 +175,10 @@ class ItemFrameListener implements Listener {
         }
         // 額縁の中身消されたとき
         ItemFrame frame = (ItemFrame) e.getEntity();
-        List<FrameData> list = api.getListByFrameData(true);
-        for (FrameData data : list) {
-            if (data.getItemFrameUUID().equals(frame.getUniqueId())) {
-                e.setCancelled(true);
-                return;
-            }
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+            e.setCancelled(true);
+            return;
         }
 
         if (frame.getItem().getType() != Material.AIR){
@@ -201,12 +197,10 @@ class ItemFrameListener implements Listener {
         }
         // 額縁の中身を取り出されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
-        List<FrameData> list = api.getListByFrameData(true);
-        for (FrameData data : list) {
-            if (data.getItemFrameUUID().equals(frame.getUniqueId())) {
-                e.setCancelled(true);
-                return;
-            }
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+            e.setCancelled(true);
+            return;
         }
 
         if (e.getDamager() instanceof Player){

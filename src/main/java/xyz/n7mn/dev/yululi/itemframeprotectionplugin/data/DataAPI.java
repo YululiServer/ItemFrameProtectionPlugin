@@ -58,6 +58,12 @@ public class DataAPI {
         drop.createTable();
     }
 
+    public FrameData getItemFrame(UUID itemFrameUUID){
+
+        return item.getFrameData(itemFrameUUID);
+
+    }
+
     public void addItemFrame(FrameData data){
 
         item.addFrameData(data);

@@ -154,9 +154,17 @@ class ItemFrameList implements DataInteface {
     public List<FrameData> getFrameDataList(){
         List<FrameData> dataList = new ArrayList<>();
 
+        synchronized (frameDataList){
+            if (frameDataList.size() != 0){
+                dataList.addAll(frameDataList);
+            }
+        }
+
         try {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1");
+            statement.setFetchSize(10000);
             ResultSet set = statement.executeQuery();
+
             while (set.next()){
 
                 ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
@@ -169,17 +177,12 @@ class ItemFrameList implements DataInteface {
 
                 FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
                 dataList.add(data);
+
             }
         } catch (SQLException e){
             if (plugin.getConfig().getBoolean("errorPrint")){
                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
                 e.printStackTrace();
-            }
-        }
-
-        synchronized (frameDataList){
-            if (frameDataList.size() != 0){
-                dataList.addAll(frameDataList);
             }
         }
 
@@ -221,6 +224,53 @@ class ItemFrameList implements DataInteface {
         return dataList;
     }
 
+    public FrameData getFrameData(UUID itemFrameUUID){
+
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1 WHERE ItemFrameUUID = ? AND Active = 1");
+
+            statement.setString(1, itemFrameUUID.toString());
+            ResultSet set = statement.executeQuery();
+            if (set.next()){
+
+                ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
+                ItemStack stack = new ItemStack(item.getType());
+                stack.setAmount(item.getAmount());
+                stack.setData(item.getMaterialData());
+                stack.setItemMeta(item.getItemMeta());
+                stack.setLore(item.getLore());
+
+                FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
+                set.close();
+                statement.close();
+
+                return data;
+            }
+            set.close();
+            statement.close();
+
+            List<FrameData> frameList = new ArrayList<>();
+            synchronized (frameDataList){
+                frameList.addAll(frameDataList);
+            }
+
+            for (FrameData data : frameList){
+
+                if (data.getItemFrameUUID().equals(itemFrameUUID)){
+                    return data;
+                }
+
+            }
+        } catch (SQLException e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
     public void addFrameData(FrameData data){
         try {
             synchronized (frameDataList){
@@ -241,8 +291,9 @@ class ItemFrameList implements DataInteface {
 
     public void deleteFrameData(UUID itemFrameUUID){
 
+        this.forceCacheToSQL();
+
         try {
-            this.forceCacheToSQL();
 
             PreparedStatement statement = con.prepareStatement("UPDATE ItemFrameTable1 SET Active = 0 WHERE ItemFrameUUID = ?");
             statement.setString(1, itemFrameUUID.toString());
