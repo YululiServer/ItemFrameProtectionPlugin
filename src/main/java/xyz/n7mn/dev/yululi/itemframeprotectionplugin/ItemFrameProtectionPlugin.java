@@ -88,8 +88,8 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new ItemFrameListener(dataAPI), this);
 
-            new AutoRemoveTimer(dataAPI, this).runTaskLaterAsynchronously(this, 0L);
-            new AutoSQLConnectCheckTimer(this, con).runTaskLaterAsynchronously(this, 0L);
+            new AutoRemoveTimer(dataAPI, this).runTaskLaterAsynchronously(this, 20L);
+            new AutoSQLConnectCheckTimer(this, con).runTaskLaterAsynchronously(this, 20L);
 
             if (this.getDescription().getVersion().endsWith("-dev")){
                 new DebugTimer(dataAPI, this).runTaskLaterAsynchronously(this, 0L);

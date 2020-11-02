@@ -23,11 +23,6 @@ class ItemFrameList implements DataInteface {
         this.frameDataList = Collections.synchronizedList(new ArrayList<>());
     }
 
-    public static ItemFrameList newInstance(Connection con, Plugin plugin){
-        return new ItemFrameList(con, plugin);
-    }
-
-
     @Override
     public void createTable(){
         // CREATE TABLE `tina-server`.`ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` BOOLEAN NOT NULL , PRIMARY KEY (`ItemFrameUUID`))
@@ -36,8 +31,13 @@ class ItemFrameList implements DataInteface {
             public void run() {
 
                 try {
+                    PreparedStatement statement;
+                    if (plugin.getConfig().getBoolean("useMySQL")){
+                        statement = con.prepareStatement("CREATE TABLE `ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` BOOLEAN NOT NULL)");
+                    } else {
+                        statement = con.prepareStatement("CREATE TABLE `ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` INTEGER)");
+                    }
 
-                    PreparedStatement statement = con.prepareStatement("CREATE TABLE `ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` BOOLEAN NOT NULL)");
                     statement.execute();
                     statement.close();
 
