@@ -29,10 +29,12 @@ class ItemFrameListener implements Listener {
     final private Plugin plugin = Bukkit.getPluginManager().getPlugin("ItemFrameProtectionPlugin");
 
     private Set<UUID> frameBreakList = Collections.synchronizedSet(new HashSet<>());
-    private UUID uuid = null;
+    private Set<UUID> tempUUID = Collections.synchronizedSet(new HashSet<>());
 
     public ItemFrameListener(DataAPI api){
+
         this.api = api;
+
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
@@ -42,13 +44,20 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        if (uuid != null && e.getRightClicked().getUniqueId().equals(uuid) && e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR){
-            uuid = null;
-            e.setCancelled(true);
-            return;
+        System.out.println("あ");
+        synchronized (tempUUID){
+            for (UUID temp : tempUUID){
+                if (temp.equals(e.getRightClicked().getUniqueId())){
+                    e.setCancelled(true);
+                    return;
+                }
+            }
         }
 
-        uuid = e.getRightClicked().getUniqueId();
+        synchronized (tempUUID){
+            tempUUID.add(e.getRightClicked().getUniqueId());
+        }
+
 
         new BukkitRunnable() {
             @Override
@@ -61,6 +70,7 @@ class ItemFrameListener implements Listener {
                     FrameData foundData = api.getItemFrame(frame.getUniqueId());
                     boolean foundFlag = (foundData != null);
 
+
                     if (player.isSneaking()){
 
                         if (foundFlag){
@@ -68,25 +78,25 @@ class ItemFrameListener implements Listener {
 
                             if (foundData.getProtectUser().equals(player.getUniqueId())){
                                 api.deleteTableByFrame(frame.getUniqueId());
-                                synchronized (frameBreakList){
-                                    frameBreakList.remove(frame.getUniqueId());
-                                }
                                 player.sendMessage(ChatColor.GREEN + "保護解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
 
+                                synchronized (tempUUID){
+                                    tempUUID.remove(e.getRightClicked().getUniqueId());
+                                }
                                 e.setCancelled(true);
                                 return;
                             } else {
 
                                 if (player.hasPermission("ifp.op")){
                                     api.deleteTableByFrame(frame.getUniqueId());
-                                    synchronized (frameBreakList){
-                                        frameBreakList.remove(frame.getUniqueId());
-                                    }
                                     player.sendMessage(ChatColor.YELLOW + "保護を代理解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
                                 } else {
                                     player.sendMessage(ChatColor.RED + "他の人が保護しています。");
                                 }
 
+                                synchronized (tempUUID){
+                                    tempUUID.remove(e.getRightClicked().getUniqueId());
+                                }
                                 e.setCancelled(true);
                                 return;
                             }
@@ -108,17 +118,27 @@ class ItemFrameListener implements Listener {
                             api.addItemFrame(data);
                             player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
                             e.setCancelled(true);
+
+                            synchronized (tempUUID){
+                                tempUUID.remove(e.getRightClicked().getUniqueId());
+                            }
                             return;
                         }
                     } else {
 
                         if (foundFlag){
+                            synchronized (tempUUID){
+                                tempUUID.remove(e.getRightClicked().getUniqueId());
+                            }
                             e.setCancelled(true);
                             return;
                         }
 
                         if (frame.getItem().getType() == Material.AIR && e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR){
 
+                            synchronized (tempUUID){
+                                tempUUID.remove(e.getRightClicked().getUniqueId());
+                            }
                             frame.setItem(e.getPlayer().getInventory().getItemInMainHand());
                             e.setCancelled(true);
                             return;
@@ -126,6 +146,9 @@ class ItemFrameListener implements Listener {
 
                     }
 
+                    synchronized (tempUUID){
+                        tempUUID.remove(e.getRightClicked().getUniqueId());
+                    }
 
                     if (e.getPlayer().getGameMode() != GameMode.CREATIVE && e.getPlayer().getGameMode() != GameMode.SPECTATOR){
 
@@ -138,8 +161,6 @@ class ItemFrameListener implements Listener {
 
                     }
 
-
-
                 } catch (Exception ex){
                     if (plugin.getConfig().getBoolean("errorPrint")){
                         plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
@@ -150,7 +171,7 @@ class ItemFrameListener implements Listener {
         }.runTaskLaterAsynchronously(plugin, 0L);
 
 
-        uuid = null;
+
     }
 
 
@@ -344,6 +365,8 @@ class ItemFrameListener implements Listener {
         e.setCancelled(true);
     }
 
+
+    private Set<UUID> frameBreakList2 = Collections.synchronizedSet(new HashSet<>());
     @EventHandler(priority = EventPriority.HIGHEST)
     public void EntityRemoveFromWorldEvent(EntityRemoveFromWorldEvent e){
 
@@ -355,37 +378,173 @@ class ItemFrameListener implements Listener {
 
         ItemFrame frame = (ItemFrame) e.getEntity();
 
-        synchronized (frameBreakList){
-            for (UUID uuid : frameBreakList) {
+        synchronized (frameBreakList2){
+            for (UUID uuid : frameBreakList2) {
                 if (uuid.equals(frame.getUniqueId())) {
-                    ItemFramePlace(e.getEntity().getLocation(), frame);
                     return;
                 }
             }
 
-            FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
-            if (itemFrame != null){
-                ItemFramePlace(e.getEntity().getLocation(), frame);
-                frameBreakList.add(frame.getUniqueId());
-            }
+            frameBreakList2.add(frame.getUniqueId());
         }
 
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+            ItemFramePlace(e.getEntity().getLocation(), frame);
+        }
+
+        synchronized (frameBreakList2){
+            frameBreakList2.remove(frame.getUniqueId());
+        }
     }
+
 
     private void ItemFramePlace(Location loc, ItemFrame frame){
 
-
         World world = loc.getWorld();
-        ItemFrame spawn = world.spawn(loc, ItemFrame.class);
-        spawn.setItem(frame.getItem());
+        boolean AirFlag = false;
+        int mode = 0;
 
-        FrameData data = api.getItemFrame(frame.getUniqueId());
+        if (loc.getPitch() == 90){
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
 
-        api.deleteTableByFrame(frame.getUniqueId());
-        synchronized (frameBreakList){
-            frameBreakList.remove(frame.getUniqueId());
+            System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = -1;
+
+            }
+
+            System.out.println("Debug1 : " + location.getBlock().getType());
         }
-        api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
+
+        if (loc.getPitch() == -90){
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
+
+            System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = -2;
+
+            }
+
+            System.out.println("Debug2 : " + location.getBlock().getType());
+        }
+
+        if (loc.getYaw() == 0){
+
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - 1);
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 1;
+
+            }
+
+        }
+
+        if (loc.getYaw() == 90){
+
+            Location location = new Location(world, loc.getBlockX() + 1, loc.getBlockY(), loc.getBlockZ());
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 2;
+
+            }
+        }
+
+        if (loc.getYaw() == 180){
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() + 1);
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 3;
+
+            }
+
+        }
+
+        if (loc.getYaw() == 270){
+            Location location = new Location(world, loc.getBlockX() - 1, loc.getBlockY(), loc.getBlockZ());
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 4;
+
+            }
+
+        }
+
+        FrameData data;
+        ItemFrame spawn;
+        if (AirFlag){
+            Location location;
+            if (mode == -1){
+
+                location = new Location(world, loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+
+            } else if (mode == -2) {
+
+                location = new Location(world, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
+
+            } else if (mode == 1) {
+
+                location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - 1);
+
+            } else if (mode == 2) {
+
+                location = new Location(world, loc.getBlockX() + 1, loc.getBlockY(), loc.getBlockZ());
+
+            } else if (mode == 3) {
+
+                location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() + 1);
+
+            } else {
+
+                location = new Location(world, loc.getBlockX() - 1, loc.getBlockY(), loc.getBlockZ());
+
+            }
+
+            location.getBlock().setType(Material.GLASS);
+            spawn = world.spawn(loc, ItemFrame.class);
+            spawn.setItem(frame.getItem());
+            data = api.getItemFrame(frame.getUniqueId());
+
+            api.deleteTableByFrame(frame.getUniqueId());
+            synchronized (frameBreakList){
+                frameBreakList.remove(frame.getUniqueId());
+            }
+
+            api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
+            location.getBlock().setType(Material.AIR);
+
+        } else {
+
+            spawn = world.spawn(loc, ItemFrame.class);
+            spawn.setItem(frame.getItem());
+            data = api.getItemFrame(frame.getUniqueId());
+
+            api.deleteTableByFrame(frame.getUniqueId());
+            synchronized (frameBreakList){
+                frameBreakList.remove(frame.getUniqueId());
+            }
+
+            api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
+        }
+
+
+
 
 
     }

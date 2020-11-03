@@ -134,7 +134,9 @@ public class ItemStackJSON {
         itemMeta.setDisplayName(displayName);
 
         if (displayNameComponent != null){
-            itemMeta.setDisplayNameComponent(displayNameComponent);
+            if (displayNameComponent.length != 0){
+                itemMeta.setDisplayNameComponent(displayNameComponent);
+            }
         }
 
         itemMeta.setLocalizedName(localizedName);
