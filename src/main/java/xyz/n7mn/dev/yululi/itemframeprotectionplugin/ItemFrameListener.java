@@ -108,7 +108,6 @@ class ItemFrameListener implements Listener {
                             api.addItemFrame(data);
                             player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
                             e.setCancelled(true);
-
                             return;
                         }
                     } else {
@@ -127,13 +126,14 @@ class ItemFrameListener implements Listener {
 
                     }
 
-
+                    /*
                     if (e.getPlayer().getGameMode() != GameMode.CREATIVE && e.getPlayer().getGameMode() != GameMode.SPECTATOR){
 
                         ItemStack itemInMainHand = e.getPlayer().getInventory().getItemInMainHand();
                         e.getPlayer().getInventory().addItem(itemInMainHand);
 
                     }
+                    */
 
 
                 } catch (Exception ex){
@@ -158,23 +158,25 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        // System.out.println("あ");
+        //System.out.println("あ");
 
         // 額縁壊されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
 
-        for (UUID uuid : frameBreakList){
-            if (uuid.equals(frame.getUniqueId())){
+        synchronized (frameBreakList){
+            for (UUID uuid : frameBreakList){
+                if (uuid.equals(frame.getUniqueId())){
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+
+            FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+            if (itemFrame != null){
+                frameBreakList.add(frame.getUniqueId());
                 e.setCancelled(true);
                 return;
             }
-        }
-
-        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
-        if (itemFrame != null){
-            frameBreakList.add(frame.getUniqueId());
-            e.setCancelled(true);
-            return;
         }
 
         // 無限増殖対策
@@ -191,7 +193,7 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        // System.out.println("い");
+        //System.out.println("い");
 
         // 額縁の中身消されたとき
         ItemFrame frame = (ItemFrame) e.getEntity();
@@ -229,7 +231,7 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        // System.out.println("う");
+        //System.out.println("う");
 
         // 額縁の中身を取り出されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
