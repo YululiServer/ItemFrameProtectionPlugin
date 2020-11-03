@@ -126,14 +126,18 @@ class ItemFrameListener implements Listener {
 
                     }
 
-                    /*
+
                     if (e.getPlayer().getGameMode() != GameMode.CREATIVE && e.getPlayer().getGameMode() != GameMode.SPECTATOR){
 
+
                         ItemStack itemInMainHand = e.getPlayer().getInventory().getItemInMainHand();
-                        e.getPlayer().getInventory().addItem(itemInMainHand);
+                        if (itemInMainHand.getAmount() > 1){
+                            e.getPlayer().getInventory().addItem(itemInMainHand);
+                        }
+
 
                     }
-                    */
+
 
 
                 } catch (Exception ex){
