@@ -9,6 +9,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
+import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.ItemFrameProtectDeleteEvent;
 
 import java.util.List;
 
@@ -39,11 +40,13 @@ class AutoRemoveTimer extends BukkitRunnable {
                     Entity entity = Bukkit.getEntity(frameData.getItemFrameUUID());
                     if (entity == null){
                         api.deleteTableByFrame(frameData.getItemFrameUUID());
+                        Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID()));
                         continue;
                     }
 
                     if (entity.getType() != EntityType.ITEM_FRAME){
                         api.deleteTableByFrame(frameData.getItemFrameUUID());
+                        Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID()));
                     }
 
                 }

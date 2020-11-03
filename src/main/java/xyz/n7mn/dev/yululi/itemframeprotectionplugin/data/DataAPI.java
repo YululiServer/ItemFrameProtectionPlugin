@@ -1,5 +1,6 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
