@@ -1,15 +1,17 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.hanging.HangingEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
@@ -20,10 +22,7 @@ import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 class ItemFrameListener implements Listener {
 
@@ -140,24 +139,34 @@ class ItemFrameListener implements Listener {
         uuid = null;
     }
 
+    private Set<UUID> frameBreakList = new HashSet<>();
+
     @EventHandler (priority = EventPriority.HIGHEST)
     public void BlockBreakEvent (HangingBreakEvent e){
+
 
         if (!(e.getEntity() instanceof ItemFrame)){
             return;
         }
 
+        // System.out.println("あ");
+
         // 額縁壊されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
 
+        for (UUID uuid : frameBreakList){
+            if (uuid.equals(frame.getUniqueId())){
+                e.setCancelled(true);
+                return;
+            }
+        }
+
         FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
         if (itemFrame != null){
+            frameBreakList.add(frame.getUniqueId());
             e.setCancelled(true);
             return;
         }
-
-
-        ItemStack item = frame.getItem();
 
         // 無限増殖対策
         if (frame.getItem().getType() != Material.AIR){
@@ -172,10 +181,23 @@ class ItemFrameListener implements Listener {
         if (!(e.getEntity() instanceof ItemFrame)){
             return;
         }
+
+        // System.out.println("い");
+
         // 額縁の中身消されたとき
         ItemFrame frame = (ItemFrame) e.getEntity();
+
+        for (UUID uuid : frameBreakList){
+            if (uuid.equals(frame.getUniqueId())){
+                e.setCancelled(true);
+                return;
+            }
+        }
+
         FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
         if (itemFrame != null){
+
+            frameBreakList.add(frame.getUniqueId());
             e.setCancelled(true);
             return;
         }
@@ -194,8 +216,20 @@ class ItemFrameListener implements Listener {
         if (!(e.getEntity() instanceof ItemFrame)){
             return;
         }
+
+        // System.out.println("う");
+
         // 額縁の中身を取り出されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
+
+        for (UUID uuid : frameBreakList) {
+            if (uuid.equals(frame.getUniqueId())) {
+                frameBreakList.add(frame.getUniqueId());
+                e.setCancelled(true);
+                return;
+            }
+        }
+
         FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
         if (itemFrame != null){
             e.setCancelled(true);
@@ -256,6 +290,36 @@ class ItemFrameListener implements Listener {
         }
 
     }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void EntityTeleportEvent (EntityTeleportEvent e){
+
+        if (e.getEntityType() != EntityType.ITEM_FRAME){
+            return;
+        }
+
+        // 額縁がtpされそうなとき
+
+        ItemFrame frame = (ItemFrame) e.getEntity();
+
+        for (UUID uuid : frameBreakList) {
+            if (uuid.equals(frame.getUniqueId())) {
+                frameBreakList.add(frame.getUniqueId());
+                e.setCancelled(true);
+                return;
+            }
+        }
+
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+            e.setCancelled(true);
+            return;
+        }
+
+        e.setCancelled(true);
+    }
+
+
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerDropItemEvent (PlayerDropItemEvent e){
