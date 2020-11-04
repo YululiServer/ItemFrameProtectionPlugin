@@ -44,7 +44,7 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        System.out.println("あ");
+        // System.out.println("あ");
         synchronized (tempUUID){
             for (UUID temp : tempUUID){
                 if (temp.equals(e.getRightClicked().getUniqueId())){
@@ -390,7 +390,8 @@ class ItemFrameListener implements Listener {
 
         FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
         if (itemFrame != null){
-            ItemFramePlace(e.getEntity().getLocation(), frame);
+            //ItemFramePlace(e.getEntity().getLocation(), frame);
+            api.deleteTableByFrame(frame.getUniqueId());
         }
 
         synchronized (frameBreakList2){
@@ -401,6 +402,7 @@ class ItemFrameListener implements Listener {
 
     private void ItemFramePlace(Location loc, ItemFrame frame){
 
+
         World world = loc.getWorld();
         boolean AirFlag = false;
         int mode = 0;
@@ -408,7 +410,7 @@ class ItemFrameListener implements Listener {
         if (loc.getPitch() == 90){
             Location location = new Location(world, loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
 
-            System.out.println("a");
+            // System.out.println("a");
             if (location.getBlock().getType() == Material.AIR) {
 
                 AirFlag = true;
@@ -422,7 +424,7 @@ class ItemFrameListener implements Listener {
         if (loc.getPitch() == -90){
             Location location = new Location(world, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
 
-            System.out.println("a");
+            // System.out.println("a");
             if (location.getBlock().getType() == Material.AIR) {
 
                 AirFlag = true;
@@ -489,37 +491,47 @@ class ItemFrameListener implements Listener {
         FrameData data;
         ItemFrame spawn;
         if (AirFlag){
-            Location location;
+            Location location1;
+            Location location2;
             if (mode == -1){
 
-                location = new Location(world, loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+
 
             } else if (mode == -2) {
 
-                location = new Location(world, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
 
             } else if (mode == 1) {
 
-                location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - 1);
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - 1);
 
             } else if (mode == 2) {
 
-                location = new Location(world, loc.getBlockX() + 1, loc.getBlockY(), loc.getBlockZ());
+                location1 = new Location(world, loc.getBlockX() + 1, loc.getBlockY(), loc.getBlockZ());
 
             } else if (mode == 3) {
 
-                location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() + 1);
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() + 1);
 
             } else {
 
-                location = new Location(world, loc.getBlockX() - 1, loc.getBlockY(), loc.getBlockZ());
+                location1 = new Location(world, loc.getBlockX() - 1, loc.getBlockY(), loc.getBlockZ());
 
             }
 
-            location.getBlock().setType(Material.GLASS);
+
+            Material locTemp = null;
+
+            location1.getBlock().setType(Material.GLASS);
+            if (loc.getBlock().getType() != Material.AIR){
+                locTemp = loc.getBlock().getType();
+                loc.getBlock().setType(Material.AIR);
+            }
             spawn = world.spawn(loc, ItemFrame.class);
             spawn.setItem(frame.getItem());
             data = api.getItemFrame(frame.getUniqueId());
+
 
             api.deleteTableByFrame(frame.getUniqueId());
             synchronized (frameBreakList){
@@ -527,7 +539,10 @@ class ItemFrameListener implements Listener {
             }
 
             api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
-            location.getBlock().setType(Material.AIR);
+            location1.getBlock().setType(Material.AIR);
+            if (locTemp != null){
+                loc.getBlock().setType(locTemp);
+            }
 
         } else {
 
