@@ -12,6 +12,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
@@ -29,7 +30,6 @@ class ItemFrameListener implements Listener {
     final private Plugin plugin = Bukkit.getPluginManager().getPlugin("ItemFrameProtectionPlugin");
 
     private Set<UUID> frameBreakList = Collections.synchronizedSet(new HashSet<>());
-    private Set<UUID> tempUUID = Collections.synchronizedSet(new HashSet<>());
 
     public ItemFrameListener(DataAPI api){
 
@@ -44,132 +44,83 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        // System.out.println("あ");
-        synchronized (tempUUID){
-            for (UUID temp : tempUUID){
-                if (temp.equals(e.getRightClicked().getUniqueId())){
+        if (e.getHand() != EquipmentSlot.HAND){
+            e.setCancelled(true);
+            return;
+        }
+
+        // スネークしながら右クリックでロックしたり解除するようにする。
+        ItemFrame frame = (ItemFrame) e.getRightClicked();
+        Player player = e.getPlayer();
+
+        FrameData data = api.getItemFrame(frame.getUniqueId());
+
+        try {
+
+            if (player.isSneaking()){
+
+                if (data == null){
+
+                    if (frame.getItem().getType() == Material.AIR){
+
+                        frame.setItem(player.getInventory().getItemInMainHand());
+
+                    }
+
+                    api.addItemFrame(new FrameData(frame.getUniqueId(), player.getInventory().getItemInMainHand(), player.getUniqueId(), new Date(), true));
+                    player.sendMessage(ChatColor.GREEN + "[額縁保護] 保護しました。解除するにはスニークをしながら右クリックしてください。");
                     e.setCancelled(true);
-                    return;
+
+                    synchronized (frameBreakList){
+                        frameBreakList.add(e.getRightClicked().getUniqueId());
+                    }
+
+                } else {
+
+                    if (data.getProtectUser().equals(player.getUniqueId())){
+                        api.deleteTableByFrame(frame.getUniqueId());
+                        player.sendMessage(ChatColor.GREEN + "[額縁保護] 保護解除しました。再度保護するにはスニークをしながら右クリックしてください。");
+
+                        synchronized (frameBreakList){
+                            frameBreakList.remove(e.getRightClicked().getUniqueId());
+                        }
+
+                        e.setCancelled(true);
+                        return;
+                    } else if (player.hasPermission("ifp.op")) {
+                        api.deleteTableByFrame(frame.getUniqueId());
+                        player.sendMessage(ChatColor.GOLD + "[額縁保護] 代理解除しました。再度保護するにはスニークをしながら右クリックしてください。");
+
+                        synchronized (frameBreakList){
+                            frameBreakList.remove(e.getRightClicked().getUniqueId());
+                        }
+
+                        e.setCancelled(true);
+                        return;
+                    }
+
+                    player.sendMessage(ChatColor.RED + "[額縁保護] 他の人が保護している額縁です！！");
+                    e.setCancelled(true);
+
                 }
+
+            } else {
+
+                if (frame.getItem().getType() == Material.AIR){
+
+                    frame.setItem(player.getInventory().getItemInMainHand());
+                }
+
+                e.setCancelled(true);
+
+            }
+
+        } catch (Exception ex){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                ex.printStackTrace();
             }
         }
-
-        synchronized (tempUUID){
-            tempUUID.add(e.getRightClicked().getUniqueId());
-        }
-
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                // スネークしながら右クリックでロックしたり解除するようにする。
-                ItemFrame frame = (ItemFrame) e.getRightClicked();
-                Player player = e.getPlayer();
-                try {
-
-                    FrameData foundData = api.getItemFrame(frame.getUniqueId());
-                    boolean foundFlag = (foundData != null);
-
-
-                    if (player.isSneaking()){
-
-                        if (foundFlag){
-                            // 保護解除
-
-                            if (foundData.getProtectUser().equals(player.getUniqueId())){
-                                api.deleteTableByFrame(frame.getUniqueId());
-                                player.sendMessage(ChatColor.GREEN + "保護解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
-
-                                synchronized (tempUUID){
-                                    tempUUID.remove(e.getRightClicked().getUniqueId());
-                                }
-                                e.setCancelled(true);
-                                return;
-                            } else {
-
-                                if (player.hasPermission("ifp.op")){
-                                    api.deleteTableByFrame(frame.getUniqueId());
-                                    player.sendMessage(ChatColor.YELLOW + "保護を代理解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
-                                } else {
-                                    player.sendMessage(ChatColor.RED + "他の人が保護しています。");
-                                }
-
-                                synchronized (tempUUID){
-                                    tempUUID.remove(e.getRightClicked().getUniqueId());
-                                }
-                                e.setCancelled(true);
-                                return;
-                            }
-
-                        } else {
-                            // 新規保護
-                            if (frame.getItem().getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() != Material.AIR){
-                                frame.setItem(player.getInventory().getItemInMainHand());
-                            }
-
-                            FrameData data = new FrameData();
-
-                            data.setItemFrameUUID(frame.getUniqueId());
-                            data.setFrameItem(frame.getItem());
-                            data.setProtectUser(player.getUniqueId());
-                            data.setCreateDate(new Date());
-                            data.setActive(true);
-
-                            api.addItemFrame(data);
-                            player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
-                            e.setCancelled(true);
-
-                            synchronized (tempUUID){
-                                tempUUID.remove(e.getRightClicked().getUniqueId());
-                            }
-                            return;
-                        }
-                    } else {
-
-                        if (foundFlag){
-                            synchronized (tempUUID){
-                                tempUUID.remove(e.getRightClicked().getUniqueId());
-                            }
-                            e.setCancelled(true);
-                            return;
-                        }
-
-                        if (frame.getItem().getType() == Material.AIR && e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR){
-
-                            synchronized (tempUUID){
-                                tempUUID.remove(e.getRightClicked().getUniqueId());
-                            }
-                            frame.setItem(e.getPlayer().getInventory().getItemInMainHand());
-                            e.setCancelled(true);
-                            return;
-                        }
-
-                    }
-
-                    synchronized (tempUUID){
-                        tempUUID.remove(e.getRightClicked().getUniqueId());
-                    }
-
-                    if (e.getPlayer().getGameMode() != GameMode.CREATIVE && e.getPlayer().getGameMode() != GameMode.SPECTATOR){
-
-
-                        ItemStack itemInMainHand = e.getPlayer().getInventory().getItemInMainHand();
-                        if (itemInMainHand.getAmount() > 1){
-                            e.getPlayer().getInventory().addItem(itemInMainHand);
-                        }
-
-
-                    }
-
-                } catch (Exception ex){
-                    if (plugin.getConfig().getBoolean("errorPrint")){
-                        plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        }.runTaskLaterAsynchronously(plugin, 0L);
-
 
 
     }
@@ -189,19 +140,27 @@ class ItemFrameListener implements Listener {
         ItemFrame frame = (ItemFrame) e.getEntity();
 
         synchronized (frameBreakList){
+
             for (UUID uuid : frameBreakList){
+
                 if (uuid.equals(frame.getUniqueId())){
                     e.setCancelled(true);
                     return;
                 }
+
             }
 
-            FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
-            if (itemFrame != null){
-                frameBreakList.add(frame.getUniqueId());
-                e.setCancelled(true);
-                return;
+        }
+
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+
+            synchronized (frameBreakList){
+                frameBreakList.add(e.getEntity().getUniqueId());
             }
+
+            e.setCancelled(true);
+            return;
         }
 
         // 無限増殖対策
@@ -209,6 +168,7 @@ class ItemFrameListener implements Listener {
             ItemStack stack = new ItemStack(Material.AIR);
             frame.setItem(stack);
         }
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
