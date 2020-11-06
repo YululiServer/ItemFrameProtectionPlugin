@@ -58,7 +58,9 @@ public class ItemStackJSON {
         this.type = stack.getType();
         this.amount = stack.getAmount();
 
-        this.displayName = stack.getItemMeta().getDisplayName();
+        if (stack.getItemMeta().getDisplayName() != null){
+            this.displayName = stack.getItemMeta().getDisplayName();
+        }
         this.attributeModifiers = stack.getItemMeta().getAttributeModifiers();
         if (stack.getItemMeta().hasCustomModelData()){
             this.customModelData = stack.getItemMeta().getCustomModelData();
