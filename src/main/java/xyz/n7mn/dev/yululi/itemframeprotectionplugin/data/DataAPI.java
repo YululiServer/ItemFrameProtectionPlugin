@@ -1,5 +1,6 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
@@ -58,6 +59,16 @@ public class DataAPI {
         drop.createTable();
     }
 
+    public FrameData getItemFrame(UUID itemFrameUUID){
+
+        return item.getFrameData(itemFrameUUID);
+
+    }
+
+    public DropItemData getDropItemData(UUID dropItemUUID) {
+        return drop.getDropItemData(dropItemUUID);
+    }
+
     public void addItemFrame(FrameData data){
 
         item.addFrameData(data);
@@ -94,6 +105,14 @@ public class DataAPI {
 
     }
 
+    public long getCountByItemFrame(){
+        return item.getCount();
+    }
+
+    public long getCountByDropItem(){
+        return drop.getCount();
+    }
+
     public void cacheClearByFrame(){
 
         item.forceCacheToSQL();
@@ -111,8 +130,9 @@ public class DataAPI {
 
     }
 
-    public int getCacheCount(){
-        return drop.getDropCacheCount();
+    public String getCacheCount(){
+        return "Item : " + item.getCacheCount() +" Drop : " + drop.getDropCacheCount();
     }
+
 
 }

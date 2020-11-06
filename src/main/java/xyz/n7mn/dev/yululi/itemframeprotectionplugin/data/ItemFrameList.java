@@ -5,14 +5,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import xyz.acrylicstyle.paper.Paper;
 
-import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.List;
 
 class ItemFrameList implements DataInteface {
@@ -27,11 +23,6 @@ class ItemFrameList implements DataInteface {
         this.frameDataList = Collections.synchronizedList(new ArrayList<>());
     }
 
-    public static ItemFrameList newInstance(Connection con, Plugin plugin){
-        return new ItemFrameList(con, plugin);
-    }
-
-
     @Override
     public void createTable(){
         // CREATE TABLE `tina-server`.`ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` BOOLEAN NOT NULL , PRIMARY KEY (`ItemFrameUUID`))
@@ -40,8 +31,13 @@ class ItemFrameList implements DataInteface {
             public void run() {
 
                 try {
+                    PreparedStatement statement;
+                    if (plugin.getConfig().getBoolean("useMySQL")){
+                        statement = con.prepareStatement("CREATE TABLE `ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` BOOLEAN NOT NULL)");
+                    } else {
+                        statement = con.prepareStatement("CREATE TABLE `ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` INTEGER)");
+                    }
 
-                    PreparedStatement statement = con.prepareStatement("CREATE TABLE `ItemFrameTable1` ( `ItemFrameUUID` VARCHAR(36) NOT NULL , `FrameItem` JSON NOT NULL , `ProtectUser` VARCHAR(36) NULL , `CreateDate` DATETIME NOT NULL , `Active` BOOLEAN NOT NULL)");
                     statement.execute();
                     statement.close();
 
@@ -119,6 +115,8 @@ class ItemFrameList implements DataInteface {
     @Override
     public void forceCacheToSQL(){
 
+        Gson gson = new Gson();
+
         try {
             List<FrameData> frameData = new ArrayList<>();
             synchronized (frameDataList){
@@ -128,26 +126,22 @@ class ItemFrameList implements DataInteface {
 
             }
 
-            for (FrameData data : frameData){
+            int i = 0;
+            for (FrameData data : frameData) {
 
-                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable1` ( `ItemFrameUUID` , `FrameItem`, `ProtectUser` , `CreateDate` , `Active` ) VALUES (?,?,?,?,?)");
-                statement.setString(1, data.getItemFrameUUID().toString());
+                PreparedStatement statement_f = con.prepareStatement("INSERT INTO `ItemFrameTable1` (`ItemFrameUUID`, `FrameItem`, `ProtectUser`, `CreateDate`, `Active`) VALUES (?, ?, ?, ?, ?) ");
+                statement_f.setString(1, data.getItemFrameUUID().toString());
+                statement_f.setString(2, gson.toJson(new ItemStackJSON(data.getFrameItem())));
+                statement_f.setString(3, data.getProtectUser().toString());
+                statement_f.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
+                statement_f.setBoolean(5, data.isActive());
 
+                statement_f.execute();
 
-                // System.out.println("debug : " + data.getFrameItem().getType());
-                ItemStackJSON itemStackJSON = new ItemStackJSON(data.getFrameItem().getType(), data.getFrameItem().getAmount(), Paper.itemStack(data.getFrameItem()).getTag());
-
-                Gson gson = new Gson();
-                String s = gson.toJson(itemStackJSON);
-
-                statement.setString(2, s);
-                statement.setString(3, data.getProtectUser().toString());
-                statement.setTimestamp(4, new java.sql.Timestamp(data.getCreateDate().getTime()));
-                statement.setBoolean(5, data.isActive());
-                statement.execute();
-                statement.close();
+                statement_f.close();
 
             }
+
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
@@ -157,23 +151,33 @@ class ItemFrameList implements DataInteface {
 
     }
 
-    @Deprecated
     public List<FrameData> getFrameDataList(){
-        List<FrameData> dataList = new ArrayList<>();
+        List<FrameData> dataList = new ArrayList<>(Math.toIntExact(this.getCount()));
+
+        synchronized (frameDataList){
+            if (frameDataList.size() != 0){
+                dataList.addAll(frameDataList);
+            }
+        }
 
         try {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1");
+            statement.setFetchSize(10000);
             ResultSet set = statement.executeQuery();
+
             while (set.next()){
 
                 ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
 
                 ItemStack stack = new ItemStack(item.getType());
                 stack.setAmount(item.getAmount());
-                Paper.itemStack(stack).setTag(item.getTag());
+                stack.setData(item.getMaterialData());
+                stack.setItemMeta(item.getItemMeta());
+                stack.setLore(item.getLore());
 
                 FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
                 dataList.add(data);
+
             }
         } catch (SQLException e){
             if (plugin.getConfig().getBoolean("errorPrint")){
@@ -182,18 +186,12 @@ class ItemFrameList implements DataInteface {
             }
         }
 
-        synchronized (frameDataList){
-            if (frameDataList.size() != 0){
-                dataList.addAll(frameDataList);
-            }
-        }
-
         return dataList;
     }
 
     public List<FrameData> getFrameDataListByActive() {
 
-        List<FrameData> dataList = new ArrayList<>();
+        List<FrameData> dataList = new ArrayList<>(Math.toIntExact(this.getCount()));
 
         try {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1 WHERE Active = 1");
@@ -203,7 +201,9 @@ class ItemFrameList implements DataInteface {
                 ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
                 ItemStack stack = new ItemStack(item.getType());
                 stack.setAmount(item.getAmount());
-                Paper.itemStack(stack).setTag(item.getTag());
+                stack.setData(item.getMaterialData());
+                stack.setItemMeta(item.getItemMeta());
+                stack.setLore(item.getLore());
 
                 FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
                 dataList.add(data);
@@ -224,16 +224,62 @@ class ItemFrameList implements DataInteface {
         return dataList;
     }
 
+    public FrameData getFrameData(UUID itemFrameUUID){
+
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable1 WHERE ItemFrameUUID = ? AND Active = 1");
+
+            statement.setString(1, itemFrameUUID.toString());
+            ResultSet set = statement.executeQuery();
+            if (set.next()){
+
+                ItemStackJSON item = new Gson().fromJson(set.getString("FrameItem"), ItemStackJSON.class);
+                ItemStack stack = new ItemStack(item.getType());
+                stack.setAmount(item.getAmount());
+                stack.setData(item.getMaterialData());
+                stack.setItemMeta(item.getItemMeta());
+                stack.setLore(item.getLore());
+
+                FrameData data = new FrameData(UUID.fromString(set.getString("ItemFrameUUID")), stack, UUID.fromString(set.getString("ProtectUser")), new Date(set.getTimestamp("CreateDate").getTime()), set.getBoolean("Active"));
+                set.close();
+                statement.close();
+
+                return data;
+            }
+            set.close();
+            statement.close();
+
+            List<FrameData> frameList = new ArrayList<>();
+            synchronized (frameDataList){
+                frameList.addAll(frameDataList);
+            }
+
+            for (FrameData data : frameList){
+
+                if (data.getItemFrameUUID().equals(itemFrameUUID)){
+                    return data;
+                }
+
+            }
+        } catch (SQLException e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
     public void addFrameData(FrameData data){
         try {
             synchronized (frameDataList){
 
                 frameDataList.add(data);
+
                 if (frameDataList.size() > 15){
                     this.forceCacheToSQL();
                 }
-
-
             }
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
@@ -245,26 +291,25 @@ class ItemFrameList implements DataInteface {
 
     public void deleteFrameData(UUID itemFrameUUID){
 
-        try {
-            boolean flag = false;
-            synchronized (frameDataList){
-                int i = 0;
-                for (FrameData data : frameDataList){
-                    if (data.getItemFrameUUID().equals(itemFrameUUID)){
-                        frameDataList.remove(i);
-                        flag = true;
-                        break;
-                    }
-                    i++;
-                }
-            }
+        synchronized (frameDataList){
+            for (FrameData data : frameDataList){
 
-            if (!flag){
-                PreparedStatement statement = con.prepareStatement("UPDATE ItemFrameTable1 SET Active = 0 WHERE ItemFrameUUID = ?");
-                statement.setString(1, itemFrameUUID.toString());
-                statement.execute();
-                statement.close();
+                if (data.getItemFrameUUID().equals(itemFrameUUID)){
+
+                    frameDataList.remove(data);
+                    return;
+                }
+
             }
+        }
+
+        try {
+
+            PreparedStatement statement = con.prepareStatement("UPDATE ItemFrameTable1 SET Active = 0 WHERE ItemFrameUUID = ?");
+            statement.setString(1, itemFrameUUID.toString());
+            statement.execute();
+            statement.close();
+
         } catch (Exception e){
             if (plugin.getConfig().getBoolean("errorPrint")){
                 plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
@@ -272,5 +317,32 @@ class ItemFrameList implements DataInteface {
             }
         }
 
+    }
+
+    public long getCount(){
+
+        long count = 0;
+
+        synchronized (frameDataList){
+            count = count + frameDataList.size();
+        }
+
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM ItemFrameTable1;");
+            ResultSet set = statement.executeQuery();
+            if (set.next()){
+
+                count = count + set.getLong("COUNT(*)");
+
+                set.close();
+                statement.close();
+                return count;
+            }
+
+        } catch (SQLException e){
+            return count;
+        }
+
+        return count;
     }
 }

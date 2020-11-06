@@ -213,6 +213,43 @@ class DropItemList implements DataInteface {
         }
     }
 
+    public DropItemData getDropItemData(UUID dropItemUUID){
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable2 WHERE DropItemUUID = ?");
+            statement.setString(1, dropItemUUID.toString());
+            ResultSet set = statement.executeQuery();
+            if (set.next()){
+
+                DropItemData data = new DropItemData();
+                data.setDropItemUUID(UUID.fromString(set.getString("DropItemUUID")));
+                data.setWorldUUID(UUID.fromString(set.getString("WorldUUID")));
+                data.setDropUser(UUID.fromString(set.getString("DropUser")));
+                data.setDropDate(new Date(set.getTimestamp("DropDate").getTime()));
+
+                set.close();
+                statement.close();
+                return data;
+            }
+
+            synchronized (dropItemDataList){
+
+                for (DropItemData data : dropItemDataList){
+                    if (data.getDropItemUUID().equals(dropItemUUID)){
+                        return data;
+                    }
+                }
+
+            }
+        } catch (Exception e){
+            if (plugin.getConfig().getBoolean("errorPrint")){
+                plugin.getLogger().info(ChatColor.RED + "エラーを検知しました。");
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
 
     public void addDropItemDataList(DropItemData data){
 
@@ -272,6 +309,34 @@ class DropItemList implements DataInteface {
         synchronized (dropItemDataList){
             return dropItemDataList.size();
         }
+    }
+
+
+    public long getCount(){
+
+        long count = 0;
+
+        synchronized (dropItemDataList){
+            count = count + dropItemDataList.size();
+        }
+
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT COUNT(*) FROM ItemFrameTable2;");
+            ResultSet set = statement.executeQuery();
+            if (set.next()){
+
+                count = count + set.getLong("COUNT(*)");
+
+                set.close();
+                statement.close();
+                return count;
+            }
+
+        } catch (SQLException e){
+            return count;
+        }
+
+        return count;
     }
 
 }

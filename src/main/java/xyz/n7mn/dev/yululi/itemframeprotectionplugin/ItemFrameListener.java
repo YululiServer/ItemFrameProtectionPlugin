@@ -1,133 +1,118 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
+import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.ItemFrameProtectDeleteEvent;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 class ItemFrameListener implements Listener {
 
     final private DataAPI api;
     final private Plugin plugin = Bukkit.getPluginManager().getPlugin("ItemFrameProtectionPlugin");
 
+    private Set<UUID> frameBreakList = Collections.synchronizedSet(new HashSet<>());
+
     public ItemFrameListener(DataAPI api){
+
         this.api = api;
+
     }
 
-    private UUID uuid = null;
-
-    @EventHandler // (priority = EventPriority.HIGHEST)
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
 
         if (!(e.getRightClicked() instanceof ItemFrame)){
             return;
         }
 
-        if (uuid != null && e.getRightClicked().getUniqueId().equals(uuid) && e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR){
-            uuid = null;
+        if (e.getHand() != EquipmentSlot.HAND){
             e.setCancelled(true);
             return;
         }
 
-        uuid = e.getRightClicked().getUniqueId();
-
         // スネークしながら右クリックでロックしたり解除するようにする。
         ItemFrame frame = (ItemFrame) e.getRightClicked();
         Player player = e.getPlayer();
+
+        FrameData data = api.getItemFrame(frame.getUniqueId());
+
         try {
-
-            boolean foundFlag = false;
-            FrameData foundData = null;
-
-            List<FrameData> list = api.getListByFrameData(true);
-            for (FrameData data : list){
-                if (data.getItemFrameUUID().equals(frame.getUniqueId())){
-                    foundFlag = true;
-                    foundData = data;
-                    break;
-                }
-            }
 
             if (player.isSneaking()){
 
-                if (foundFlag){
-                    // 保護解除
+                if (data == null){
 
-                    if (foundData.getProtectUser().equals(player.getUniqueId())){
+                    if (frame.getItem().getType() == Material.AIR){
+
+                        frame.setItem(player.getInventory().getItemInMainHand());
+
+                    }
+
+                    api.addItemFrame(new FrameData(frame.getUniqueId(), player.getInventory().getItemInMainHand(), player.getUniqueId(), new Date(), true));
+                    player.sendMessage(ChatColor.GREEN + "[額縁保護] 保護しました。解除するにはスニークをしながら右クリックしてください。");
+                    e.setCancelled(true);
+
+                    synchronized (frameBreakList){
+                        frameBreakList.add(e.getRightClicked().getUniqueId());
+                    }
+
+                } else {
+
+                    if (data.getProtectUser().equals(player.getUniqueId())){
                         api.deleteTableByFrame(frame.getUniqueId());
-                        player.sendMessage(ChatColor.GREEN + "保護解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
-                    } else {
+                        player.sendMessage(ChatColor.GREEN + "[額縁保護] 保護解除しました。再度保護するにはスニークをしながら右クリックしてください。");
 
-                        if (player.hasPermission("ifp.op")){
-                            api.deleteTableByFrame(frame.getUniqueId());
-                            player.sendMessage(ChatColor.YELLOW + "保護を代理解除しました。 もう一度保護するにはスニークしながら右クリックしてください。");
-                        } else {
-                            player.sendMessage(ChatColor.RED + "他の人が保護しています。");
+                        synchronized (frameBreakList){
+                            frameBreakList.remove(e.getRightClicked().getUniqueId());
                         }
 
                         e.setCancelled(true);
+                        return;
+                    } else if (player.hasPermission("ifp.op")) {
+                        api.deleteTableByFrame(frame.getUniqueId());
+                        player.sendMessage(ChatColor.GOLD + "[額縁保護] 代理解除しました。再度保護するにはスニークをしながら右クリックしてください。");
+
+                        synchronized (frameBreakList){
+                            frameBreakList.remove(e.getRightClicked().getUniqueId());
+                        }
+
+                        e.setCancelled(true);
+                        return;
                     }
 
-                    return;
-                } else {
-                    // 新規保護
-                    if (frame.getItem().getType() == Material.AIR && player.getInventory().getItemInMainHand().getType() != Material.AIR){
-                        frame.setItem(player.getInventory().getItemInMainHand());
-                    }
-
-                    FrameData data = new FrameData();
-
-                    data.setItemFrameUUID(frame.getUniqueId());
-                    data.setFrameItem(frame.getItem());
-                    data.setProtectUser(player.getUniqueId());
-                    data.setCreateDate(new Date());
-                    data.setActive(true);
-
-                    api.addItemFrame(data);
-                    player.sendMessage(ChatColor.GREEN + "保護しました。 保護解除するにはスニークしながら右クリックしてください。");
+                    player.sendMessage(ChatColor.RED + "[額縁保護] 他の人が保護している額縁です！！");
                     e.setCancelled(true);
 
-                    return;
                 }
+
             } else {
 
-                if (foundFlag){
-                    e.setCancelled(true);
-                    return;
+                if (frame.getItem().getType() == Material.AIR){
+
+                    frame.setItem(player.getInventory().getItemInMainHand());
                 }
 
-                if (frame.getItem().getType() == Material.AIR && e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR){
-
-                    frame.setItem(e.getPlayer().getInventory().getItemInMainHand());
-                    e.setCancelled(true);
-                    return;
-                }
+                e.setCancelled(true);
 
             }
-
-
-            // ItemStack itemInMainHand = e.getPlayer().getInventory().getItemInMainHand();
-            // e.getPlayer().getInventory().addItem(itemInMainHand);
-
 
         } catch (Exception ex){
             if (plugin.getConfig().getBoolean("errorPrint")){
@@ -137,33 +122,52 @@ class ItemFrameListener implements Listener {
         }
 
 
-        uuid = null;
     }
+
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public void BlockBreakEvent (HangingBreakEvent e){
+
 
         if (!(e.getEntity() instanceof ItemFrame)){
             return;
         }
 
+        //System.out.println("あ");
+
         // 額縁壊されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
-        List<FrameData> list = api.getListByFrameData(true);
-        for (FrameData data : list) {
-            if (data.getItemFrameUUID().equals(frame.getUniqueId())) {
-                e.setCancelled(true);
-                return;
+
+        synchronized (frameBreakList){
+
+            for (UUID uuid : frameBreakList){
+
+                if (uuid.equals(frame.getUniqueId())){
+                    e.setCancelled(true);
+                    return;
+                }
+
             }
+
         }
 
-        ItemStack item = frame.getItem();
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+
+            synchronized (frameBreakList){
+                frameBreakList.add(e.getEntity().getUniqueId());
+            }
+
+            e.setCancelled(true);
+            return;
+        }
 
         // 無限増殖対策
         if (frame.getItem().getType() != Material.AIR){
             ItemStack stack = new ItemStack(Material.AIR);
             frame.setItem(stack);
         }
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -172,15 +176,29 @@ class ItemFrameListener implements Listener {
         if (!(e.getEntity() instanceof ItemFrame)){
             return;
         }
+
+        //System.out.println("い");
+
         // 額縁の中身消されたとき
         ItemFrame frame = (ItemFrame) e.getEntity();
-        List<FrameData> list = api.getListByFrameData(true);
-        for (FrameData data : list) {
-            if (data.getItemFrameUUID().equals(frame.getUniqueId())) {
+
+        synchronized (frameBreakList){
+            for (UUID uuid : frameBreakList){
+                if (uuid.equals(frame.getUniqueId())){
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+
+            FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+            if (itemFrame != null){
+
+                frameBreakList.add(frame.getUniqueId());
                 e.setCancelled(true);
                 return;
             }
         }
+
 
         if (frame.getItem().getType() != Material.AIR){
 
@@ -196,12 +214,25 @@ class ItemFrameListener implements Listener {
         if (!(e.getEntity() instanceof ItemFrame)){
             return;
         }
+
+        //System.out.println("う");
+
         // 額縁の中身を取り出されるとき
         ItemFrame frame = (ItemFrame) e.getEntity();
-        List<FrameData> list = api.getListByFrameData(true);
-        for (FrameData data : list) {
-            if (data.getItemFrameUUID().equals(frame.getUniqueId())) {
+
+        synchronized (frameBreakList){
+            for (UUID uuid : frameBreakList) {
+                if (uuid.equals(frame.getUniqueId())) {
+
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+
+            FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+            if (itemFrame != null){
                 e.setCancelled(true);
+                frameBreakList.add(frame.getUniqueId());
                 return;
             }
         }
@@ -262,6 +293,247 @@ class ItemFrameListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
+    public void EntityTeleportEvent (EntityTeleportEvent e){
+
+        if (e.getEntityType() != EntityType.ITEM_FRAME){
+            return;
+        }
+
+        // 額縁がtpされそうなとき
+
+        ItemFrame frame = (ItemFrame) e.getEntity();
+
+        synchronized (frameBreakList){
+            for (UUID uuid : frameBreakList) {
+                if (uuid.equals(frame.getUniqueId())) {
+
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
+
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+            frameBreakList.add(frame.getUniqueId());
+            e.setCancelled(true);
+            return;
+        }
+
+        e.setCancelled(true);
+    }
+
+
+    private Set<UUID> frameBreakList2 = Collections.synchronizedSet(new HashSet<>());
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void EntityRemoveFromWorldEvent(EntityRemoveFromWorldEvent e){
+
+        // 額縁がkillされそうなとき
+
+        if (e.getEntity().getType() != EntityType.ITEM_FRAME){
+            return;
+        }
+
+        ItemFrame frame = (ItemFrame) e.getEntity();
+
+        synchronized (frameBreakList2){
+            for (UUID uuid : frameBreakList2) {
+                if (uuid.equals(frame.getUniqueId())) {
+                    return;
+                }
+            }
+
+            frameBreakList2.add(frame.getUniqueId());
+        }
+
+        FrameData itemFrame = api.getItemFrame(frame.getUniqueId());
+        if (itemFrame != null){
+            //ItemFramePlace(e.getEntity().getLocation(), frame);
+            api.deleteTableByFrame(frame.getUniqueId());
+        }
+
+        synchronized (frameBreakList2){
+            frameBreakList2.remove(frame.getUniqueId());
+        }
+    }
+
+
+    private void ItemFramePlace(Location loc, ItemFrame frame){
+
+
+        World world = loc.getWorld();
+        boolean AirFlag = false;
+        int mode = 0;
+
+        if (loc.getPitch() == 90){
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = -1;
+
+            }
+
+            System.out.println("Debug1 : " + location.getBlock().getType());
+        }
+
+        if (loc.getPitch() == -90){
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = -2;
+
+            }
+
+            System.out.println("Debug2 : " + location.getBlock().getType());
+        }
+
+        if (loc.getYaw() == 0){
+
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - 1);
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 1;
+
+            }
+
+        }
+
+        if (loc.getYaw() == 90){
+
+            Location location = new Location(world, loc.getBlockX() + 1, loc.getBlockY(), loc.getBlockZ());
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 2;
+
+            }
+        }
+
+        if (loc.getYaw() == 180){
+            Location location = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() + 1);
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 3;
+
+            }
+
+        }
+
+        if (loc.getYaw() == 270){
+            Location location = new Location(world, loc.getBlockX() - 1, loc.getBlockY(), loc.getBlockZ());
+
+            // System.out.println("a");
+            if (location.getBlock().getType() == Material.AIR) {
+
+                AirFlag = true;
+                mode = 4;
+
+            }
+
+        }
+
+        FrameData data;
+        ItemFrame spawn;
+        if (AirFlag){
+            Location location1;
+            Location location2;
+            if (mode == -1){
+
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+
+
+            } else if (mode == -2) {
+
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
+
+            } else if (mode == 1) {
+
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - 1);
+
+            } else if (mode == 2) {
+
+                location1 = new Location(world, loc.getBlockX() + 1, loc.getBlockY(), loc.getBlockZ());
+
+            } else if (mode == 3) {
+
+                location1 = new Location(world, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() + 1);
+
+            } else {
+
+                location1 = new Location(world, loc.getBlockX() - 1, loc.getBlockY(), loc.getBlockZ());
+
+            }
+
+
+            Material locTemp = null;
+
+            location1.getBlock().setType(Material.GLASS);
+            if (loc.getBlock().getType() != Material.AIR){
+                locTemp = loc.getBlock().getType();
+                loc.getBlock().setType(Material.AIR);
+            }
+            spawn = world.spawn(loc, ItemFrame.class);
+            spawn.setItem(frame.getItem());
+            data = api.getItemFrame(frame.getUniqueId());
+
+
+            api.deleteTableByFrame(frame.getUniqueId());
+            synchronized (frameBreakList){
+                frameBreakList.remove(frame.getUniqueId());
+            }
+
+            api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
+            location1.getBlock().setType(Material.AIR);
+            if (locTemp != null){
+                loc.getBlock().setType(locTemp);
+            }
+
+        } else {
+
+            spawn = world.spawn(loc, ItemFrame.class);
+            spawn.setItem(frame.getItem());
+            data = api.getItemFrame(frame.getUniqueId());
+
+            api.deleteTableByFrame(frame.getUniqueId());
+            synchronized (frameBreakList){
+                frameBreakList.remove(frame.getUniqueId());
+            }
+
+            api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
+        }
+
+
+
+
+
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void ItemFrameProtectDeleteEvent(ItemFrameProtectDeleteEvent e){
+        // キャッシュ削除
+        synchronized (frameBreakList){
+            frameBreakList.remove(e.getItemFrameUUID());
+        }
+    }
+
+
+
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerDropItemEvent (PlayerDropItemEvent e){
 
         Item itemDrop = e.getItemDrop();
@@ -275,7 +547,6 @@ class ItemFrameListener implements Listener {
         api.addDropItem(data);
 
     }
-
 
 
     private boolean ItemStackEqual(ItemStack item1, ItemStack item2){
