@@ -10,3 +10,7 @@ commands:
   ifp:
     description: '説明いる？'
     usage: '/ifp'
+
+  frame-kill:
+    description: 'kill item_frame'
+    usage: '/frame-kill'
