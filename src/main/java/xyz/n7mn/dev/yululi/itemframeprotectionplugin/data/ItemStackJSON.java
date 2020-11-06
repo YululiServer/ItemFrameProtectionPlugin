@@ -3,15 +3,13 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 import com.destroystokyo.paper.Namespaced;
 import com.google.common.collect.Multimap;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
-import org.bukkit.persistence.PersistentDataContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +26,6 @@ public class ItemStackJSON {
     private int customModelData;
     private Set<Namespaced> destroyableKeys;
     private BaseComponent[] displayNameComponent;
-    private Set<ItemFlag> itemFlags;
     private String localizedName;
     private List<BaseComponent[]> loreComponents;
     private Set<Namespaced> placeableKeys;
@@ -38,14 +35,8 @@ public class ItemStackJSON {
     private List<String> lore;
 
 
-    public ItemStackJSON(){
-        type = Material.AIR;
-        amount = 0;
-        materialData = null;
-        lore = new ArrayList<>();
-    }
 
-    public ItemStackJSON(Material type, int amount, String displayName, Multimap<Attribute, AttributeModifier> attributeModifiers, int customModelData, Set<Namespaced> destroyableKeys, BaseComponent[] displayNameComponent, Set<ItemFlag> itemFlags, String localizedName, List<BaseComponent[]> loreComponents, Set<Namespaced> placeableKeys, boolean unbreakable, MaterialData materialData, List<String> lore) {
+    public ItemStackJSON(Material type, int amount, String displayName, Multimap<Attribute, AttributeModifier> attributeModifiers, int customModelData, Set<Namespaced> destroyableKeys, BaseComponent[] displayNameComponent, String localizedName, List<BaseComponent[]> loreComponents, Set<Namespaced> placeableKeys, boolean unbreakable, MaterialData materialData, List<String> lore) {
         this.type = type;
         this.amount = amount;
         this.displayName = displayName;
@@ -53,14 +44,12 @@ public class ItemStackJSON {
         this.customModelData = customModelData;
         this.destroyableKeys = destroyableKeys;
         this.displayNameComponent = displayNameComponent;
-        this.itemFlags = itemFlags;
         this.localizedName = localizedName;
         this.loreComponents = loreComponents;
         this.placeableKeys = placeableKeys;
         this.unbreakable = unbreakable;
         this.materialData = materialData;
         this.lore = lore;
-
 
     }
 
@@ -75,8 +64,11 @@ public class ItemStackJSON {
             this.customModelData = stack.getItemMeta().getCustomModelData();
         }
         this.destroyableKeys = stack.getItemMeta().getDestroyableKeys();
-        this.displayNameComponent = stack.getItemMeta().getDisplayNameComponent();
-        this.itemFlags = stack.getItemMeta().getItemFlags();
+        if (stack.getItemMeta().getDisplayNameComponent().length != 0){
+            this.displayNameComponent = stack.getItemMeta().getDisplayNameComponent();
+        } else {
+            this.displayNameComponent = TextComponent.fromLegacyText("");
+        }
         this.localizedName = stack.getItemMeta().getLocalizedName();
         this.loreComponents = stack.getItemMeta().getLoreComponents();
         this.placeableKeys = stack.getItemMeta().getPlaceableKeys();
