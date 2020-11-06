@@ -15,6 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 class IFPCommand implements CommandExecutor {
@@ -243,10 +244,12 @@ class IFPCommand implements CommandExecutor {
                             continue;
                         }
 
+
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         if (data.isActive()){
-                            sender.sendMessage(ChatColor.GREEN + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " UserUUID: " + data.getCreateDate());
+                            sender.sendMessage(ChatColor.GREEN + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
                         } else {
-                            sender.sendMessage(ChatColor.RED + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " UserUUID: " + data.getCreateDate());
+                            sender.sendMessage(ChatColor.RED + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
                         }
 
                     }
