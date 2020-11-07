@@ -108,7 +108,9 @@ class ItemFrameListener implements Listener {
                 if (frame.getItem().getType() == Material.AIR){
 
                     frame.setItem(player.getInventory().getItemInMainHand());
-                    player.sendMessage(ChatColor.DARK_GREEN + "[額縁保護] スニークしながら右クリックで額縁の保護を試してみませんか？");
+                    if (plugin.getConfig().getBoolean("userMessage")){
+                        player.sendMessage(ChatColor.DARK_GREEN + "[額縁保護] スニークしながら右クリックで額縁の保護を試してみませんか？");
+                    }
                 }
 
                 e.setCancelled(true);
