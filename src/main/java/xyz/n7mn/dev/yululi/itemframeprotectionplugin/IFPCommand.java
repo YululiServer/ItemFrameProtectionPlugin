@@ -110,7 +110,7 @@ class IFPCommand implements CommandExecutor {
                             if (args[0].toLowerCase().equals("admin") && player.hasPermission("ifp.op")){
 
 
-                                sender.sendMessage("---- ItemFrameProtectPlugin Ver " + plugin.getDescription().getVersion() + " ----");
+                                sender.sendMessage("額縁保護プラグイン Ver " + plugin.getDescription().getVersion());
                                 sender.sendMessage(ChatColor.GREEN + "保護件数 : " + api.getCountByItemFrame() + " 件");
                                 List<FrameData> list = api.getListByFrameData(false);
 
@@ -118,13 +118,14 @@ class IFPCommand implements CommandExecutor {
 
                                     Entity entity = Bukkit.getEntity(data.getItemFrameUUID());
                                     if (entity == null){
-                                        continue;
+                                        data.setActive(false);
                                     }
 
+                                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                                     if (data.isActive()){
-                                        sender.sendMessage(ChatColor.GREEN + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " UserUUID: " + data.getCreateDate());
+                                        sender.sendMessage(ChatColor.GREEN + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
                                     } else {
-                                        sender.sendMessage(ChatColor.RED + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " UserUUID: " + data.getCreateDate());
+                                        sender.sendMessage(ChatColor.RED + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
                                     }
 
                                 }
@@ -234,7 +235,7 @@ class IFPCommand implements CommandExecutor {
 
                     } else {
 
-                        sender.sendMessage("---- ItemFrameProtectPlugin Ver " + plugin.getDescription().getVersion() + " ----");
+                        sender.sendMessage("額縁保護プラグイン Ver " + plugin.getDescription().getVersion());
                         List<FrameData> list = api.getListByFrameData(false);
                         sender.sendMessage(ChatColor.GREEN + "ProtectCount : " + list.size());
 
@@ -242,7 +243,7 @@ class IFPCommand implements CommandExecutor {
 
                             Entity entity = Bukkit.getEntity(data.getItemFrameUUID());
                             if (entity == null){
-                                continue;
+                                data.setActive(false);
                             }
 
 
