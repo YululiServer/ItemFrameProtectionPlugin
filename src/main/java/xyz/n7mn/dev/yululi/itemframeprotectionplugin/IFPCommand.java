@@ -125,7 +125,11 @@ class IFPCommand implements CommandExecutor {
                                     if (data.isActive()){
                                         sender.sendMessage(ChatColor.GREEN + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
                                     } else {
-                                        sender.sendMessage(ChatColor.RED + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
+                                        if (entity == null){
+                                            sender.sendMessage(ChatColor.RED + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
+                                        } else {
+                                            sender.sendMessage(ChatColor.RED + "■ "+ChatColor.RESET+"UUID: " + data.getItemFrameUUID() + " WorldName: " + entity.getLocation().getWorld().getName() + " X: " + entity.getLocation().getBlockX() + " Y: " + entity.getLocation().getBlockY() + " Z: " + entity.getLocation().getBlockZ() + " Date: " + simpleDateFormat.format(data.getCreateDate()));
+                                        }
                                     }
 
                                 }

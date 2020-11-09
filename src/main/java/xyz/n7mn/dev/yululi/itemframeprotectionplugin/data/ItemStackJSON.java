@@ -58,13 +58,19 @@ public class ItemStackJSON {
         this.type = stack.getType();
         this.amount = stack.getAmount();
 
-        if (stack.getItemMeta().getDisplayName() != null){
+
+        if (stack.getItemMeta() != null && stack.getItemMeta().getDisplayName() != null){
             this.displayName = stack.getItemMeta().getDisplayName();
         }
-        this.attributeModifiers = stack.getItemMeta().getAttributeModifiers();
+
+        if (stack.getItemMeta() != null && stack.getItemMeta().getAttributeModifiers() != null){
+            this.attributeModifiers = stack.getItemMeta().getAttributeModifiers();
+        }
+
         if (stack.getItemMeta().hasCustomModelData()){
             this.customModelData = stack.getItemMeta().getCustomModelData();
         }
+
         this.destroyableKeys = stack.getItemMeta().getDestroyableKeys();
         if (stack.getItemMeta().getDisplayNameComponent().length != 0){
             this.displayNameComponent = stack.getItemMeta().getDisplayNameComponent();
