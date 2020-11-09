@@ -40,13 +40,14 @@ class AutoRemoveTimer extends BukkitRunnable {
                     Entity entity = Bukkit.getEntity(frameData.getItemFrameUUID());
                     if (entity == null){
                         api.deleteTableByFrame(frameData.getItemFrameUUID());
-                        Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID()));
+
+                        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID())));
                         continue;
                     }
 
                     if (entity.getType() != EntityType.ITEM_FRAME){
                         api.deleteTableByFrame(frameData.getItemFrameUUID());
-                        Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID()));
+                        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID())));
                     }
 
                 }
