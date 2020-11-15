@@ -597,7 +597,7 @@ class ItemFrameListener implements Listener {
             Chest chest = (Chest) block.getState();
             if (api.getBoxDataBySearch(chest.getLocation()) == null){
 
-                BoxData boxData = new BoxData(e.getPlayer().getUniqueId(), chest.getBlockInventory());
+                BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), chest.getBlockInventory());
                 api.addBoxData(boxData);
 
             }
@@ -610,7 +610,7 @@ class ItemFrameListener implements Listener {
             ShulkerBox shulkerBox = (ShulkerBox) block.getState();
             if (api.getBoxDataBySearch(shulkerBox.getLocation()) == null){
 
-                BoxData boxData = new BoxData(e.getPlayer().getUniqueId(), shulkerBox.getInventory());
+                BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), shulkerBox.getInventory());
                 api.addBoxData(boxData);
 
             }
