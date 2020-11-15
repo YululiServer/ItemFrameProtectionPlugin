@@ -268,9 +268,9 @@ class ItemFrameListener implements Listener {
                 }
 
             }
+            // エクストラインベントリ
 
-            //System.out.println("いい");
-
+            // ドロップ対策
             List<DropItemData> itemList = api.getListByDropItem();
 
             for (DropItemData item : itemList){
@@ -290,6 +290,35 @@ class ItemFrameListener implements Listener {
                     }
                 }
             }
+
+            // チェスト・シュルカーボックス対策
+            List<BoxData> boxDataList = api.getBoxDataList();
+            Location location = frame.getLocation();
+
+            for (BoxData boxData : boxDataList){
+
+                if (Math.abs(location.getBlockX() - boxData.getInventory().getLocation().getBlockX()) <= 5 && Math.abs(location.getBlockY() - boxData.getInventory().getLocation().getBlockY()) <= 5 && Math.abs(location.getBlockZ() - boxData.getInventory().getLocation().getBlockZ()) <= 5){
+
+                    Inventory dataInventory = boxData.getInventory();
+                    int size = dataInventory.getSize();
+
+                    for (int i = 0; i < size; i++){
+
+                        ItemStack item = dataInventory.getItem(i);
+
+                        if (Objects.requireNonNull(item).getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
+
+                    }
+
+                }
+
+            }
+
 
             player.getInventory().addItem(frameData);
 
