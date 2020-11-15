@@ -21,6 +21,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import xyz.acrylicstyle.AdvancedAchievementsAPI;
+import xyz.acrylicstyle.commons.AchievementAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.*;
 
 import java.util.*;
@@ -269,6 +272,12 @@ class ItemFrameListener implements Listener {
 
             }
             // エクストラインベントリ
+
+            AdvancedAchievementsAPI instance = AdvancedAchievementsAPI.getInstance();
+            Inventory extraInventory = instance.getExtraInventory(player.getUniqueId());
+
+
+
 
             // ドロップ対策
             List<DropItemData> itemList = api.getListByDropItem();
