@@ -37,7 +37,7 @@ class BoxDataList implements DataInteface {
     public void createTable() {
 
         try {
-            PreparedStatement statement = con.prepareStatement("CREATE TABLE `ItemFrameTable3` ( `BoxDataUUID` VARCHAR(36) NOT NULL, `BlockWorldUUID` VARCHAR(36) NOT NULL, `BlockX` INTEGER NOT NULL, `BlockY` INTEGER NOT NULL, `BlockZ` INTEGER NOT NULL  , PRIMARY KEY (`BoxDataUUID`))");
+            PreparedStatement statement = con.prepareStatement("CREATE TABLE `ItemFrameTable3` ( `BoxDataUUID` VARCHAR(36) NOT NULL, `UseUserUUID` VARCHAR(36) NOT NULL, `BlockWorldUUID` VARCHAR(36) NOT NULL, `BlockX` INTEGER NOT NULL, `BlockY` INTEGER NOT NULL, `BlockZ` INTEGER NOT NULL  , PRIMARY KEY (`BoxDataUUID`,`UseUserUUID`))");
             statement.execute();
             statement.close();
         } catch (Exception e){
@@ -109,13 +109,14 @@ class BoxDataList implements DataInteface {
         for (BoxData boxData : boxList){
 
             try {
-                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable3` (`BoxDataUUID`, `BlockWorldUUID`, `BlockX`, `BlockY`, `BlockZ`) VALUES (?, ?, ?, ?, ?) ");
+                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable3` (`BoxDataUUID`, UseUserUUID, `BlockWorldUUID`, `BlockX`, `BlockY`, `BlockZ`) VALUES (?, ?, ?, ?, ?) ");
 
                 statement.setString(1, boxData.getBoxDataUUID().toString());
-                statement.setString(2, boxData.getInventory().getLocation().getWorld().getUID().toString());
-                statement.setInt(3, boxData.getInventory().getLocation().getBlockX());
-                statement.setInt(4, boxData.getInventory().getLocation().getBlockY());
-                statement.setInt(5, boxData.getInventory().getLocation().getBlockZ());
+                statement.setString(2, boxData.getBoxUseUUID().toString());
+                statement.setString(3, boxData.getInventory().getLocation().getWorld().getUID().toString());
+                statement.setInt(4, boxData.getInventory().getLocation().getBlockX());
+                statement.setInt(5, boxData.getInventory().getLocation().getBlockY());
+                statement.setInt(6, boxData.getInventory().getLocation().getBlockZ());
                 statement.execute();
                 statement.close();
 
@@ -155,6 +156,8 @@ class BoxDataList implements DataInteface {
                 if (location.getBlock().getType() != Material.CHEST && location.getBlock().getType() != Material.SHULKER_BOX){
                     continue;
                 }
+
+                data.setBoxDataUUID(UUID.fromString(set.getString("UseUserUUID")));
 
                 if (location.getBlock() instanceof Chest){
 
@@ -226,7 +229,7 @@ class BoxDataList implements DataInteface {
                 if (location.getBlock() instanceof Chest){
 
                     Chest chest = (Chest) location.getBlock();
-                    BoxData data = new BoxData(UUID.fromString(set.getString("BoxDataUUID")), chest.getBlockInventory());
+                    BoxData data = new BoxData(UUID.fromString(set.getString("BoxDataUUID")), UUID.fromString(set.getString("UseUserUUID")), chest.getBlockInventory());
 
                     set.close();
                     statement.close();
@@ -236,7 +239,7 @@ class BoxDataList implements DataInteface {
                 if (location.getBlock() instanceof ShulkerBox){
 
                     ShulkerBox shulkerBox = (ShulkerBox) location.getBlock();
-                    BoxData data = new BoxData(UUID.fromString(set.getString("BoxDataUUID")), shulkerBox.getInventory());
+                    BoxData data = new BoxData(UUID.fromString(set.getString("BoxDataUUID")), UUID.fromString(set.getString("UseUserUUID")), shulkerBox.getInventory());
 
                     set.close();
                     statement.close();
@@ -292,7 +295,7 @@ class BoxDataList implements DataInteface {
                 if (loc.getBlock() instanceof Chest){
 
                     Chest chest = (Chest) loc.getBlock();
-                    BoxData boxData = new BoxData(UUID.fromString("BoxDataUUID"), chest.getBlockInventory());
+                    BoxData boxData = new BoxData(UUID.fromString(set.getString("BoxDataUUID")), UUID.fromString(set.getString("UseUserUUID")), chest.getBlockInventory());
 
                     set.close();
                     statement.close();
@@ -304,7 +307,7 @@ class BoxDataList implements DataInteface {
                 if (loc.getBlock() instanceof ShulkerBox){
 
                     ShulkerBox shulkerBox = (ShulkerBox) loc.getBlock();
-                    BoxData boxData = new BoxData(UUID.fromString("BoxDataUUID"), shulkerBox.getInventory());
+                    BoxData boxData = new BoxData(UUID.fromString("BoxDataUUID"), UUID.fromString(set.getString("UseUserUUID")), shulkerBox.getInventory());
                     set.close();
                     statement.close();
 
@@ -378,8 +381,9 @@ class BoxDataList implements DataInteface {
 
         try {
 
-            PreparedStatement statement = con.prepareStatement("DELETE FROM `ItemFrameTable3` WHERE BoxDataUUID = ?");
+            PreparedStatement statement = con.prepareStatement("DELETE FROM `ItemFrameTable3` WHERE BoxDataUUID = ? AND UseUserUUID = ?");
             statement.setString(1, data.getBoxDataUUID().toString());
+            statement.setString(2, data.getBoxUseUUID().toString());
             statement.execute();
             statement.close();
 

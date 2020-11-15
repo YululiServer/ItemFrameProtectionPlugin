@@ -7,6 +7,7 @@ import java.util.UUID;
 public class BoxData {
 
     private UUID BoxDataUUID;
+    private UUID BoxUseUUID;
     private Inventory Inventory;
 
     public BoxData(){
@@ -14,18 +15,27 @@ public class BoxData {
         this.Inventory = null;
     }
 
-    public BoxData(UUID boxDataUUID, Inventory inventory){
+    public BoxData(UUID boxDataUUID, UUID boxUseUUID, Inventory inventory){
         this.BoxDataUUID = boxDataUUID;
+        this.BoxUseUUID = boxUseUUID;
         this.Inventory = inventory;
     }
 
     public BoxData(UUID boxDataUUID){
         this.BoxDataUUID = boxDataUUID;
+        this.BoxUseUUID = null;
         this.Inventory = null;
     }
 
-    public BoxData(Inventory inventory){
+    public BoxData(UUID boxDataUUID, UUID boxUseUUID){
+        this.BoxDataUUID = boxDataUUID;
+        this.BoxUseUUID = boxUseUUID;
+        this.Inventory = null;
+    }
+
+    public BoxData(UUID boxUseUUID, Inventory inventory){
         this.BoxDataUUID = UUID.randomUUID();
+        this.BoxUseUUID = boxUseUUID;
         this.Inventory = inventory;
     }
 
@@ -37,7 +47,15 @@ public class BoxData {
         BoxDataUUID = boxDataUUID;
     }
 
-    public org.bukkit.inventory.Inventory getInventory() {
+    public UUID getBoxUseUUID() {
+        return BoxUseUUID;
+    }
+
+    public void setBoxUseUUID(UUID boxUseUUID) {
+        BoxUseUUID = boxUseUUID;
+    }
+
+    public Inventory getInventory() {
         return Inventory;
     }
 
