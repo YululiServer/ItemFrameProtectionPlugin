@@ -278,7 +278,7 @@ class BoxDataList implements DataInteface {
 
         try {
 
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable3 WHERE BlockWorldUUID = ? BlockX = ? AND BlockY = ? AND BlockZ = ?");
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable3 WHERE BlockWorldUUID = ? AND BlockX = ? AND BlockY = ? AND BlockZ = ?");
 
             statement.setString(1, loc.getWorld().getUID().toString());
             statement.setInt(2, loc.getBlockX());
