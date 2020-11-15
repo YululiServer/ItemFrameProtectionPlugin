@@ -411,7 +411,7 @@ class ItemFrameListener implements Listener {
 
             }
 
-            System.out.println("Debug1 : " + location.getBlock().getType());
+            //System.out.println("Debug1 : " + location.getBlock().getType());
         }
 
         if (loc.getPitch() == -90){
@@ -425,7 +425,7 @@ class ItemFrameListener implements Listener {
 
             }
 
-            System.out.println("Debug2 : " + location.getBlock().getType());
+            //System.out.println("Debug2 : " + location.getBlock().getType());
         }
 
         if (loc.getYaw() == 0){
@@ -582,38 +582,36 @@ class ItemFrameListener implements Listener {
 
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.VERY_LOWEST)
     public void InventoryOpenEvent (InventoryOpenEvent e){
         Location location = e.getInventory().getLocation();
         Block block = Objects.requireNonNull(location).getBlock();
+        //System.out.println("debug 1 : " + block.getType());
+        if (block.getState() instanceof Chest){
+            //System.out.println("debug 11");
+            Chest chest = (Chest) block.getState();
+            if (api.getBoxDataBySearch(chest.getLocation()) == null){
 
-        if (block.getType() == Material.CHEST || block.getType() == Material.SHULKER_BOX){
-
-            if (block instanceof Chest){
-
-                Chest chest = (Chest) block;
-                if (api.getBoxDataBySearch(chest.getLocation()) == null){
-
-                    BoxData boxData = new BoxData(chest.getBlockInventory());
-                    api.addBoxData(boxData);
-
-                }
-
-                return;
-            }
-
-            if (block instanceof ShulkerBox){
-
-                ShulkerBox shulkerBox = (ShulkerBox) block;
-                if (api.getBoxDataBySearch(shulkerBox.getLocation()) == null){
-
-                    BoxData boxData = new BoxData(shulkerBox.getInventory());
-                    api.addBoxData(boxData);
-
-                }
+                BoxData boxData = new BoxData(chest.getBlockInventory());
+                api.addBoxData(boxData);
 
             }
+
+            return;
         }
+
+        if (block.getState() instanceof ShulkerBox){
+            //System.out.println("debug 12");
+            ShulkerBox shulkerBox = (ShulkerBox) block.getState();
+            if (api.getBoxDataBySearch(shulkerBox.getLocation()) == null){
+
+                BoxData boxData = new BoxData(shulkerBox.getInventory());
+                api.addBoxData(boxData);
+
+            }
+
+        }
+
 
     }
 

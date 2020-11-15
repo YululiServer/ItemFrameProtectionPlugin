@@ -278,7 +278,7 @@ class BoxDataList implements DataInteface {
 
         try {
 
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable3 WHERE AND BlockWorldUUID = ? BlockX = ? AND BlockY = ? AND BlockZ = ?");
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM ItemFrameTable3 WHERE BlockWorldUUID = ? BlockX = ? AND BlockY = ? AND BlockZ = ?");
 
             statement.setString(1, loc.getWorld().getUID().toString());
             statement.setInt(2, loc.getBlockX());
@@ -336,10 +336,14 @@ class BoxDataList implements DataInteface {
 
         synchronized (BoxDataList){
 
+            //System.out.println("debug : " + BoxDataList.size());
+
             BoxDataList.add(data);
             listCount = BoxDataList.size();
 
         }
+
+        //System.out.println("debug2 : " + BoxDataList.size());
 
         if (listCount <= 15){
             return;
