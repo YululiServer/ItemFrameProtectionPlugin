@@ -132,6 +132,7 @@ public class DataAPI {
 
         item.forceCacheToSQL();
         drop.forceCacheToSQL();
+        box.forceCacheToSQL();
 
         //chest.forceCacheToSQL();
 
