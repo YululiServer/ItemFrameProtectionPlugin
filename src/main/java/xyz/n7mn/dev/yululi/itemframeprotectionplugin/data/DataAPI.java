@@ -12,12 +12,16 @@ public class DataAPI {
     final ItemFrameList item;
     final Plugin plugin;
 
+    final ChestInDataList chest;
+
     public DataAPI(Connection con, Plugin plugin){
 
         drop = new DropItemList(con, plugin);
         item = new ItemFrameList(con, plugin);
+
         this.plugin = plugin;
 
+        chest = new ChestInDataList(con, plugin);
     }
 
     public List<FrameData> getListByFrameData(boolean activeOnly){
@@ -127,11 +131,61 @@ public class DataAPI {
         item.forceCacheToSQL();
         drop.forceCacheToSQL();
 
+        chest.forceCacheToSQL();
+
     }
 
     public String getCacheCount(){
         return "Item : " + item.getCacheCount() +" Drop : " + drop.getDropCacheCount();
     }
 
+
+    public List<ChestInData> getChestInDataList(){
+
+        return chest.getChestInDataList();
+
+    }
+
+    public ChestInData getChestInData(UUID chestUUID) {
+
+        return chest.getChestInData(chestUUID);
+    }
+
+
+    public void addChestInData(UUID chestUUID, UUID useUserUUID){
+
+        chest.setChestInData(chestUUID, useUserUUID);
+
+    }
+
+    public void addChestInData(ChestInData data){
+
+        chest.setChestInData(data);
+
+    }
+
+    public void deleteChestInData(UUID chestUUID, UUID useUserUUID){
+
+        chest.deleteChestInData(chestUUID, useUserUUID);
+
+    }
+
+    public void deleteChestInData(ChestInData data){
+
+        chest.deleteChestInData(data);
+
+    }
+
+    public void deleteAllTableByChest(){
+
+        chest.deleteAll();
+
+    }
+
+    public void cacheClearByChest(){
+
+        chest.deleteCache();
+
+    }
 
 }
