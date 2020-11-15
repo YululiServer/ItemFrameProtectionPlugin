@@ -21,7 +21,7 @@ public class ItemStackJSON {
 
     private String displayName;
     private Multimap<Attribute, AttributeModifier> attributeModifiers;
-    private int customModelData;
+    private Integer customModelData;
     private Set<Namespaced> destroyableKeys;
     private BaseComponent[] displayNameComponent;
     private String localizedName;
@@ -126,7 +126,11 @@ public class ItemStackJSON {
             itemMeta.setAttributeModifiers(attributeModifiers);
         }
 
-        itemMeta.setCustomModelData(customModelData);
+        if (customModelData != null){
+
+            itemMeta.setCustomModelData(customModelData);
+
+        }
 
         if (destroyableKeys != null){
             itemMeta.setDestroyableKeys(destroyableKeys);

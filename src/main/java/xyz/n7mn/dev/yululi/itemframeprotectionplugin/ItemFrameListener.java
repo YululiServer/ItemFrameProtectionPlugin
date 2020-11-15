@@ -297,7 +297,12 @@ class ItemFrameListener implements Listener {
 
             for (BoxData boxData : boxDataList){
 
+                if (!boxData.getBoxUseUUID().equals(player.getUniqueId())){
+                    continue;
+                }
+
                 if (Math.abs(location.getBlockX() - boxData.getInventory().getLocation().getBlockX()) <= 5 && Math.abs(location.getBlockY() - boxData.getInventory().getLocation().getBlockY()) <= 5 && Math.abs(location.getBlockZ() - boxData.getInventory().getLocation().getBlockZ()) <= 5){
+
 
                     Inventory dataInventory = boxData.getInventory();
                     int size = dataInventory.getSize();
