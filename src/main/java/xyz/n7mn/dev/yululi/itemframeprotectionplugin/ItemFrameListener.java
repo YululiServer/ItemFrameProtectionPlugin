@@ -3,6 +3,9 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -10,16 +13,15 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.ItemFrameProtectDeleteEvent;
+import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.*;
 
 import java.util.*;
 
@@ -551,6 +553,40 @@ class ItemFrameListener implements Listener {
 
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void InventoryOpenEvent (InventoryOpenEvent e){
+        Location location = e.getInventory().getLocation();
+        Block block = Objects.requireNonNull(location).getBlock();
+
+        if (block.getType() == Material.CHEST || block.getType() == Material.SHULKER_BOX){
+
+            if (block instanceof Chest){
+
+                Chest chest = (Chest) block;
+                if (api.getBoxDataBySearch(chest.getLocation()) == null){
+
+                    BoxData boxData = new BoxData(chest.getBlockInventory());
+                    api.addBoxData(boxData);
+
+                }
+
+                return;
+            }
+
+            if (block instanceof ShulkerBox){
+
+                ShulkerBox shulkerBox = (ShulkerBox) block;
+                if (api.getBoxDataBySearch(shulkerBox.getLocation()) == null){
+
+                    BoxData boxData = new BoxData(shulkerBox.getInventory());
+                    api.addBoxData(boxData);
+
+                }
+
+            }
+        }
+
+    }
 
     private boolean ItemStackEqual(ItemStack item1, ItemStack item2){
 
@@ -576,6 +612,9 @@ class ItemFrameListener implements Listener {
             }
 
         }
+
+
+
         return false;
     }
 
