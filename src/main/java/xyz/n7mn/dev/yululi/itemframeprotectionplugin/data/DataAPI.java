@@ -1,5 +1,7 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
+import org.bukkit.Location;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
@@ -12,7 +14,7 @@ public class DataAPI {
     final ItemFrameList item;
     final Plugin plugin;
 
-    final ChestInDataList chest;
+    final BoxDataList box;
 
     public DataAPI(Connection con, Plugin plugin){
 
@@ -21,7 +23,7 @@ public class DataAPI {
 
         this.plugin = plugin;
 
-        chest = new ChestInDataList(con, plugin);
+        box = new BoxDataList(con, plugin);
     }
 
     public List<FrameData> getListByFrameData(boolean activeOnly){
@@ -131,7 +133,7 @@ public class DataAPI {
         item.forceCacheToSQL();
         drop.forceCacheToSQL();
 
-        chest.forceCacheToSQL();
+        //chest.forceCacheToSQL();
 
     }
 
@@ -140,52 +142,57 @@ public class DataAPI {
     }
 
 
-    public List<ChestInData> getChestInDataList(){
+    public List<BoxData> getBoxDataList(){
 
-        return chest.getChestInDataList();
-
-    }
-
-    public ChestInData getChestInData(UUID chestUUID) {
-
-        return chest.getChestInData(chestUUID);
-    }
-
-
-    public void addChestInData(UUID chestUUID, UUID useUserUUID){
-
-        chest.setChestInData(chestUUID, useUserUUID);
+        return box.getBoxDataList();
 
     }
 
-    public void addChestInData(ChestInData data){
+    public BoxData getBoxData(UUID boxUUID) {
 
-        chest.setChestInData(data);
+        return box.getBoxData(boxUUID);
+    }
+
+
+    public void addBoxData(UUID boxUUID, Inventory inventory){
+
+        box.setBoxData(boxUUID, inventory);
 
     }
 
-    public void deleteChestInData(UUID chestUUID, UUID useUserUUID){
+    public void addBoxData(BoxData data){
 
-        chest.deleteChestInData(chestUUID, useUserUUID);
-
-    }
-
-    public void deleteChestInData(ChestInData data){
-
-        chest.deleteChestInData(data);
+        box.setBoxData(data);
 
     }
 
-    public void deleteAllTableByChest(){
+    public void deleteChestInData(UUID boxUUID){
 
-        chest.deleteAll();
-
-    }
-
-    public void cacheClearByChest(){
-
-        chest.deleteCache();
+        box.deleteBoxData(boxUUID);
 
     }
 
+    public void deleteBoxData(BoxData data){
+
+        box.deleteBoxData(data);
+
+    }
+
+    public void deleteAllTableByBox(){
+
+        box.deleteAll();
+
+    }
+
+    public void cacheClearByBox(){
+
+        box.deleteCache();
+
+    }
+
+    public BoxData getBoxDataBySearch(Location loc){
+
+        return box.getBoxDataBySearch(loc);
+
+    }
 }
