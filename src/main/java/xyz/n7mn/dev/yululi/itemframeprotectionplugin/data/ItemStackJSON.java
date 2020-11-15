@@ -122,14 +122,19 @@ public class ItemStackJSON {
         ItemStack itemStack = new ItemStack(type);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setAttributeModifiers(attributeModifiers);
+        if (attributeModifiers != null){
+            itemMeta.setAttributeModifiers(attributeModifiers);
+        }
+
         itemMeta.setCustomModelData(customModelData);
 
         if (destroyableKeys != null){
             itemMeta.setDestroyableKeys(destroyableKeys);
         }
 
-        itemMeta.setDisplayName(displayName);
+        if (displayName != null){
+            itemMeta.setDisplayName(displayName);
+        }
 
         if (displayNameComponent != null){
             if (displayNameComponent.length != 0){
@@ -137,9 +142,17 @@ public class ItemStackJSON {
             }
         }
 
-        itemMeta.setLocalizedName(localizedName);
-        itemMeta.setLore(lore);
-        itemMeta.setLoreComponents(loreComponents);
+        if (localizedName != null){
+            itemMeta.setLocalizedName(localizedName);
+        }
+
+        if (lore != null){
+            itemMeta.setLore(lore);
+        }
+
+        if (loreComponents != null){
+            itemMeta.setLoreComponents(loreComponents);
+        }
 
         if (placeableKeys != null){
             itemMeta.setPlaceableKeys(placeableKeys);

@@ -306,7 +306,7 @@ class ItemFrameListener implements Listener {
 
                         ItemStack item = dataInventory.getItem(i);
 
-                        if (Objects.requireNonNull(item).getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
 
                             frame.setItem(new ItemStack(Material.AIR));
                             e.setCancelled(true);
