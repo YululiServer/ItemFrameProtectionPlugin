@@ -615,7 +615,12 @@ class ItemFrameListener implements Listener {
     @EventHandler(priority = EventPriority.VERY_LOWEST)
     public void InventoryOpenEvent (InventoryOpenEvent e){
         Location location = e.getInventory().getLocation();
-        Block block = Objects.requireNonNull(location).getBlock();
+
+        if (location == null){
+            return;
+        }
+
+        Block block = location.getBlock();
         //System.out.println("debug 1 : " + block.getType());
         if (block.getState() instanceof Chest){
             //System.out.println("debug 11");
