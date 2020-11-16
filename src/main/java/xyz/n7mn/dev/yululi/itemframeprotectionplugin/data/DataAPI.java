@@ -52,6 +52,8 @@ public class DataAPI {
         item.createTable();
         drop.createTable();
 
+        box.createTable();
+
     }
 
     public void createTableByItem(){
@@ -194,6 +196,12 @@ public class DataAPI {
     public BoxData getBoxDataBySearch(Location loc){
 
         return box.getBoxDataBySearch(loc);
+
+    }
+
+    public void createTableByBox(){
+
+        box.createTable();
 
     }
 }

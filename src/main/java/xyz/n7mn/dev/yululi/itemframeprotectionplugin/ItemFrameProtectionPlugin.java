@@ -58,6 +58,14 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                     dataAPI.createTableByDrop();
                 }
 
+                try {
+                    PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable3 LIMIT 1;");
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException e){
+                    dataAPI.createTableByBox();
+                }
+
             } else {
 
                 String pass = "./" + getDataFolder().getPath() + "/FrameData.db";

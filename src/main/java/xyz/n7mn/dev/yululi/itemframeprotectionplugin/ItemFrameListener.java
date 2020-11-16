@@ -643,7 +643,7 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        System.out.println(location.getBlock().getType());
+        // System.out.println(location.getBlock().getType());
 
         Block block = location.getBlock();
         //System.out.println("debug 1 : " + block.getType());
@@ -672,6 +672,8 @@ class ItemFrameListener implements Listener {
 
             }
 
+            return;
+
         }
 
         // シュルカー
@@ -685,6 +687,7 @@ class ItemFrameListener implements Listener {
 
             }
 
+            return;
         }
 
         // かまど
@@ -694,6 +697,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), furnace.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // 溶鉱炉
@@ -703,6 +707,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), blastFurnace.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // 燻製器
@@ -712,6 +717,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), smoker.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // ホッパー
@@ -721,6 +727,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), hopper.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // ディスペンサー
@@ -730,6 +737,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), dispenser.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // ホッパーカート
@@ -739,6 +747,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), hopperMinecart.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // ドロッパー
@@ -748,6 +757,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), dropper.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // 樽
@@ -757,6 +767,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), barrel.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
 
@@ -766,6 +777,7 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
         // トラップチェスト
@@ -774,15 +786,11 @@ class ItemFrameListener implements Listener {
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
             api.addBoxData(boxData);
 
+            return;
         }
 
-        // チェストトロッコ？
-        if (block.getType() == Material.RAIL || block.getType() == Material.ACTIVATOR_RAIL || block.getType() == Material.DETECTOR_RAIL || block.getType() == Material.POWERED_RAIL){
-
-            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
-            api.addBoxData(boxData);
-
-        }
+        // プレーヤー以外
+        System.out.println("Debug : " + e.getReason());
 
     }
 
