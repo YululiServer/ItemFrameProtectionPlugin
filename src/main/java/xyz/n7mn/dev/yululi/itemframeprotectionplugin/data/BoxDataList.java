@@ -1,11 +1,12 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
+import com.destroystokyo.paper.loottable.LootableBlockInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Chest;
-import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.*;
+import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 
@@ -150,27 +151,96 @@ class BoxDataList implements DataInteface {
 
             while (set.next()){
 
-                BoxData data = new BoxData(UUID.fromString(set.getString("BoxDataUUID")));
-                Location location = new Location(Bukkit.getWorld(UUID.fromString(set.getString("BlockWorldUUID"))), set.getInt("BlockX"), set.getInt("BlockY"), set.getInt("BlockZ"));
-
-                if (location.getBlock().getType() != Material.CHEST && location.getBlock().getType() != Material.SHULKER_BOX){
+                if (Bukkit.getServer().getWorld(UUID.fromString(set.getString("BlockWorldUUID"))) == null){
                     continue;
                 }
 
+                if (Bukkit.getWorld(UUID.fromString(set.getString("BlockWorldUUID"))) == null){
+                    continue;
+                }
+
+                BoxData data = new BoxData(UUID.fromString(set.getString("BoxDataUUID")));
+                Location location = new Location(Bukkit.getWorld(UUID.fromString(set.getString("BlockWorldUUID"))), set.getInt("BlockX"), set.getInt("BlockY"), set.getInt("BlockZ"));
+
+
                 data.setBoxDataUUID(UUID.fromString(set.getString("UseUserUUID")));
+                Block block = location.getBlock();
 
-                if (location.getBlock() instanceof Chest){
-
-                    Chest chest = (Chest) location.getBlock();
+                // チェスト
+                if (block.getState() instanceof Chest){
+                    Chest chest = (Chest) block.getState();
                     data.setInventory(chest.getBlockInventory());
+                }
+
+                // ラージチェスト？
+                if (block.getState() instanceof DoubleChest){
+                    DoubleChest chest = (DoubleChest) block.getState();
+                    data.setInventory(chest.getInventory());
+                }
+
+                // シュルカー
+                if (block.getState() instanceof ShulkerBox){
+                    ShulkerBox shulkerBox = (ShulkerBox) block.getState();
+                    data.setInventory(shulkerBox.getInventory());
+                }
+
+                // かまど
+                if (block.getState() instanceof Furnace){
+
+                    Furnace furnace = (Furnace) block.getState();
+                    data.setInventory(furnace.getInventory());
 
                 }
 
-                if (location.getBlock() instanceof ShulkerBox){
+                // 溶鉱炉
+                if (block.getState() instanceof BlastFurnace){
 
-                    ShulkerBox shulkerBox = (ShulkerBox) location.getBlock();
-                    data.setInventory(shulkerBox.getInventory());
+                    BlastFurnace blastFurnace = (BlastFurnace) block.getState();
+                    data.setInventory(blastFurnace.getInventory());
 
+                }
+
+                // 燻製器
+                if (block.getState() instanceof Smoker){
+
+                    Smoker smoker = (Smoker) block.getState();
+                    data.setInventory(smoker.getInventory());
+
+                }
+
+                // ホッパー
+                if (block.getState() instanceof Hopper){
+
+                    Hopper hopper = (Hopper) block.getState();
+                    data.setInventory(hopper.getInventory());
+                }
+
+                // ディスペンサー
+                if (block.getState() instanceof Dispenser){
+
+                    Dispenser dispenser = (Dispenser) block.getState();
+                    data.setInventory(dispenser.getInventory());
+                }
+
+                // ホッパーカート
+                if (block.getState() instanceof HopperMinecart){
+
+                    HopperMinecart hopperMinecart = (HopperMinecart) block.getState();
+                    data.setInventory(hopperMinecart.getInventory());
+                }
+
+                // ドロッパー
+                if (block.getState() instanceof Dropper){
+
+                    Dropper dropper = (Dropper) block.getState();
+                    data.setInventory(dropper.getInventory());
+                }
+
+                // 樽
+                if (block.getState() instanceof Barrel){
+
+                    Barrel barrel = (Barrel) block.getState();
+                    data.setInventory(barrel.getInventory());
                 }
 
                 boxList.add(data);

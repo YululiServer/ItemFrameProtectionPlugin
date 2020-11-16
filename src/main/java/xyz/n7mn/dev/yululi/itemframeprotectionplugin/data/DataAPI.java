@@ -169,7 +169,7 @@ public class DataAPI {
 
     }
 
-    public void deleteChestInData(UUID boxUUID){
+    public void deleteBoxData(UUID boxUUID){
 
         box.deleteBoxData(boxUUID);
 

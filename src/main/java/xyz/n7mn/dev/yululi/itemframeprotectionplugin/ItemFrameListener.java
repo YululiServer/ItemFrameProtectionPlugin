@@ -321,11 +321,15 @@ class ItemFrameListener implements Listener {
                 }
             }
 
-            // チェスト・シュルカーボックス・かまど対策
+            // チェスト・シュルカーボックス・かまどなどの対策
             List<BoxData> boxDataList = api.getBoxDataList();
             Location location = frame.getLocation();
 
             for (BoxData boxData : boxDataList){
+
+                if (boxData.getBoxUseUUID() == null || boxData.getBoxDataUUID() == null || boxData.getInventory() == null){
+                    continue;
+                }
 
                 if (!boxData.getBoxUseUUID().equals(player.getUniqueId())){
                     continue;
@@ -765,16 +769,6 @@ class ItemFrameListener implements Listener {
 
             Barrel barrel = (Barrel) block.getState();
             BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), barrel.getInventory());
-            api.addBoxData(boxData);
-
-            return;
-        }
-
-
-        // 金床
-        if (block.getType() == Material.ANVIL || block.getType() == Material.CHIPPED_ANVIL || block.getType() == Material.DAMAGED_ANVIL){
-
-            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
             api.addBoxData(boxData);
 
             return;
