@@ -789,8 +789,16 @@ class ItemFrameListener implements Listener {
             return;
         }
 
-        // プレーヤー以外
-        System.out.println("Debug : " + e.getReason());
+        // 多分プレーヤー以外。
+        Inventory inventory = e.getInventory();
+        int size = e.getInventory().getSize();
+
+        if (size != 5){
+
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), inventory);
+            api.addBoxData(boxData);
+
+        }
 
     }
 

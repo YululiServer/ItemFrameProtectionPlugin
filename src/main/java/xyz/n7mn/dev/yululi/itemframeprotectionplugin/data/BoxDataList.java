@@ -109,7 +109,7 @@ class BoxDataList implements DataInteface {
         for (BoxData boxData : boxList){
 
             try {
-                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable3` (`BoxDataUUID`, UseUserUUID, `BlockWorldUUID`, `BlockX`, `BlockY`, `BlockZ`) VALUES (?, ?, ?, ?, ?) ");
+                PreparedStatement statement = con.prepareStatement("INSERT INTO `ItemFrameTable3` (`BoxDataUUID`, `UseUserUUID`, `BlockWorldUUID`, `BlockX`, `BlockY`, `BlockZ`) VALUES (?, ?, ?, ?, ?, ?) ");
 
                 statement.setString(1, boxData.getBoxDataUUID().toString());
                 statement.setString(2, boxData.getBoxUseUUID().toString());
@@ -346,7 +346,7 @@ class BoxDataList implements DataInteface {
 
         }
 
-        //System.out.println("debug2 : " + BoxDataList.size());
+        // System.out.println("debug2 : " + BoxDataList.size());
 
         if (listCount <= 15){
             return;
