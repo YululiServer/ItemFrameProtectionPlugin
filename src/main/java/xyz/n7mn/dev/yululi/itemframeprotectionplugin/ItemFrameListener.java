@@ -776,6 +776,14 @@ class ItemFrameListener implements Listener {
 
         }
 
+        // チェストトロッコ？
+        if (block.getType() == Material.RAIL || block.getType() == Material.ACTIVATOR_RAIL || block.getType() == Material.DETECTOR_RAIL || block.getType() == Material.POWERED_RAIL){
+
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
     }
 
     private boolean ItemStackEqual(ItemStack item1, ItemStack item2){
