@@ -276,7 +276,23 @@ class ItemFrameListener implements Listener {
             AdvancedAchievementsAPI instance = AdvancedAchievementsAPI.getInstance();
             Inventory extraInventory = instance.getExtraInventory(player.getUniqueId());
 
+            for (int i = 0; i < extraInventory.getSize(); i++){
 
+                if (extraInventory.getItem(i) == null){
+                    continue;
+                }
+
+                if (extraInventory.getItem(i).getType() == Material.AIR){
+                    continue;
+                }
+
+                if (extraInventory.getItem(i).getType() == frame.getItem().getType() && ItemStackEqual(extraInventory.getItem(i), frame.getItem())){
+                    frame.setItem(new ItemStack(Material.AIR));
+                    e.setCancelled(true);
+                    return;
+                }
+
+            }
 
 
             // ドロップ対策
