@@ -3,27 +3,29 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.*;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.acrylicstyle.AdvancedAchievementsAPI;
+import xyz.acrylicstyle.achievement.gui.ExtraInventoryGui;
+import xyz.acrylicstyle.achievement.gui.ExtraInventoryGuiHolder;
 import xyz.acrylicstyle.commons.AchievementAPI;
+import xyz.acrylicstyle.utils.PlayerConfigAPI;
 import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.*;
 
 import java.util.*;
@@ -272,15 +274,18 @@ class ItemFrameListener implements Listener {
 
             }
             // エクストラインベントリ
-
-            AdvancedAchievementsAPI instance = AdvancedAchievementsAPI.getInstance();
-            Inventory extraInventory = instance.getExtraInventory(player.getUniqueId());
+            ExtraInventoryGui ex = ExtraInventoryGuiHolder.getOrCreate(player.getUniqueId());
+            Inventory extraInventory = ex.getInventory();
 
             for (int i = 0; i < extraInventory.getSize(); i++){
+
+                // System.out.println("i : " + i);
 
                 if (extraInventory.getItem(i) == null){
                     continue;
                 }
+
+                // System.out.println(extraInventory.getItem(i).getType());
 
                 if (extraInventory.getItem(i).getType() == Material.AIR){
                     continue;
@@ -316,7 +321,7 @@ class ItemFrameListener implements Listener {
                 }
             }
 
-            // チェスト・シュルカーボックス対策
+            // チェスト・シュルカーボックス・かまど対策
             List<BoxData> boxDataList = api.getBoxDataList();
             Location location = frame.getLocation();
 
@@ -349,6 +354,22 @@ class ItemFrameListener implements Listener {
 
             }
 
+            // エンダーチェスト対策
+            Inventory enderChest = player.getEnderChest();
+            int size = enderChest.getSize();
+
+            for (int i = 0; i < size; i++){
+
+                ItemStack item = enderChest.getItem(i);
+
+                if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                    frame.setItem(new ItemStack(Material.AIR));
+                    e.setCancelled(true);
+                    return;
+                }
+
+            }
 
             player.getInventory().addItem(frameData);
 
@@ -612,16 +633,21 @@ class ItemFrameListener implements Listener {
 
     }
 
+
     @EventHandler(priority = EventPriority.VERY_LOWEST)
-    public void InventoryOpenEvent (InventoryOpenEvent e){
+    public void InventoryCloseEvent (InventoryCloseEvent e){
+
         Location location = e.getInventory().getLocation();
 
         if (location == null){
             return;
         }
 
+        System.out.println(location.getBlock().getType());
+
         Block block = location.getBlock();
         //System.out.println("debug 1 : " + block.getType());
+        // チェスト
         if (block.getState() instanceof Chest){
             //System.out.println("debug 11");
             Chest chest = (Chest) block.getState();
@@ -635,6 +661,20 @@ class ItemFrameListener implements Listener {
             return;
         }
 
+        // ラージチェスト？
+        if (block.getState() instanceof DoubleChest){
+
+            DoubleChest chest = (DoubleChest) block.getState();
+            if (api.getBoxDataBySearch(chest.getLocation()) == null){
+
+                BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), chest.getInventory());
+                api.addBoxData(boxData);
+
+            }
+
+        }
+
+        // シュルカー
         if (block.getState() instanceof ShulkerBox){
             //System.out.println("debug 12");
             ShulkerBox shulkerBox = (ShulkerBox) block.getState();
@@ -647,6 +687,94 @@ class ItemFrameListener implements Listener {
 
         }
 
+        // かまど
+        if (block.getState() instanceof Furnace){
+
+            Furnace furnace = (Furnace) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), furnace.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // 溶鉱炉
+        if (block.getState() instanceof BlastFurnace){
+
+            BlastFurnace blastFurnace = (BlastFurnace) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), blastFurnace.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // 燻製器
+        if (block.getState() instanceof Smoker){
+
+            Smoker smoker = (Smoker) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), smoker.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // ホッパー
+        if (block.getState() instanceof Hopper){
+
+            Hopper hopper = (Hopper) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), hopper.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // ディスペンサー
+        if (block.getState() instanceof Dispenser){
+
+            Dispenser dispenser = (Dispenser) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), dispenser.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // ホッパーカート
+        if (block.getState() instanceof HopperMinecart){
+
+            HopperMinecart hopperMinecart = (HopperMinecart) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), hopperMinecart.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // ドロッパー
+        if (block.getState() instanceof Dropper){
+
+            Dropper dropper = (Dropper) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), dropper.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // 樽
+        if (block.getState() instanceof Barrel){
+
+            Barrel barrel = (Barrel) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), barrel.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+
+        // 金床
+        if (block.getType() == Material.ANVIL || block.getType() == Material.CHIPPED_ANVIL || block.getType() == Material.DAMAGED_ANVIL){
+
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
+            api.addBoxData(boxData);
+
+        }
+
+        // トラップチェスト
+        if (block.getType() == Material.TRAPPED_CHEST){
+
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
+            api.addBoxData(boxData);
+
+        }
 
     }
 
