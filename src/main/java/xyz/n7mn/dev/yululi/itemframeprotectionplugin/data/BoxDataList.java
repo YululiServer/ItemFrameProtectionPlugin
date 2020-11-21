@@ -1,6 +1,5 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
-import com.destroystokyo.paper.loottable.LootableBlockInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -10,7 +9,6 @@ import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 
-import javax.swing.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
