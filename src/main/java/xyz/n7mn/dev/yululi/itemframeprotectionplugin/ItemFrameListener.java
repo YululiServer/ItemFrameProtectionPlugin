@@ -7,6 +7,7 @@ import org.bukkit.block.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.HopperMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -375,6 +376,53 @@ class ItemFrameListener implements Listener {
 
             }
 
+            // チェストトロッコ・馬対策
+            World world = Bukkit.getServer().getWorld(player.getLocation().getWorld().getUID());
+            List<Entity> entities = world.getEntities();
+            for (Entity entity : entities){
+
+                if (entity instanceof StorageMinecart){
+
+                    StorageMinecart minecart = (StorageMinecart) entity;
+                    Inventory inventory1 = minecart.getInventory();
+                    int size1 = inventory1.getSize();
+
+                    for (int i = 0; i < size1; i++){
+
+                        ItemStack item = inventory1.getItem(i);
+
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
+
+                    }
+                }
+
+                if (entity instanceof ChestedHorse){
+
+                    ChestedHorse chestedHorse = (ChestedHorse) entity;
+                    Inventory inventory1 = chestedHorse.getInventory();
+                    int size1 = inventory1.getSize();
+
+                    for (int i = 0; i < size1; i++){
+
+                        ItemStack item = inventory1.getItem(i);
+
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
+
+                    }
+
+                }
+            }
+
             player.getInventory().addItem(frameData);
 
         }
@@ -605,10 +653,6 @@ class ItemFrameListener implements Listener {
 
             api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
         }
-
-
-
-
 
     }
 
