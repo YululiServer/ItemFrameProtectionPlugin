@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.*;
+import org.bukkit.material.FlowerPot;
 import org.bukkit.plugin.Plugin;
 import xyz.acrylicstyle.achievement.gui.ExtraInventoryGui;
 import xyz.acrylicstyle.achievement.gui.ExtraInventoryGuiHolder;
@@ -369,7 +370,7 @@ class ItemFrameListener implements Listener {
 
             }
 
-            // チェストトロッコ・馬対策
+            // チェストトロッコ・馬とかのEntity対策
             World world = Bukkit.getServer().getWorld(player.getLocation().getWorld().getUID());
             List<Entity> entities = world.getEntities();
             for (Entity entity : entities){
@@ -413,6 +414,26 @@ class ItemFrameListener implements Listener {
 
                     }
 
+                }
+
+                if (entity instanceof HopperMinecart){
+
+                    HopperMinecart minecart = (HopperMinecart) entity;
+                    Inventory inventory1 = minecart.getInventory();
+                    int size1 = inventory1.getSize();
+
+                    for (int i = 0; i < size1; i++){
+
+                        ItemStack item = inventory1.getItem(i);
+
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
+
+                    }
                 }
             }
 
@@ -488,7 +509,7 @@ class ItemFrameListener implements Listener {
         }
     }
 
-
+/*
     private void ItemFramePlace(Location loc, ItemFrame frame){
 
 
@@ -648,7 +669,7 @@ class ItemFrameListener implements Listener {
         }
 
     }
-
+*/
     @EventHandler(priority = EventPriority.HIGHEST)
     public void ItemFrameProtectDeleteEvent(ItemFrameProtectDeleteEvent e){
         // キャッシュ削除
