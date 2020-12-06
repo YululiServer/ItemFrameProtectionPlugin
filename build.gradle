@@ -3,12 +3,12 @@ import org.apache.tools.ant.filters.ReplaceTokens
 apply plugin: 'java'
 
 group = 'xyz.n7mn.dev.yululi'
-version = '3.0.8-rc'
+version = '3.0.8'
+tasks.withType(AbstractCompile)*.options*.encoding = tasks.withType(GroovyCompile)*.groovyOptions*.encoding = 'UTF-8'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-tasks.withType(AbstractCompile)*.options*.encoding = tasks.withType(GroovyCompile)*.groovyOptions*.encoding = 'UTF-8'
 
 
 repositories {

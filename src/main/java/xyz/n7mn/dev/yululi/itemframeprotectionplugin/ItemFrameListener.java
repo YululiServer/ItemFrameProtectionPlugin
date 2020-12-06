@@ -14,7 +14,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.*;
@@ -30,8 +29,6 @@ class ItemFrameListener implements Listener {
     final private DataAPI api;
     final private Plugin plugin = Bukkit.getPluginManager().getPlugin("ItemFrameProtectionPlugin");
 
-    private List<InventoryData> inventoryData = Collections.synchronizedList(new ArrayList<>());
-
     private Set<UUID> frameBreakList = Collections.synchronizedSet(new HashSet<>());
 
     public ItemFrameListener(DataAPI api){
@@ -40,29 +37,6 @@ class ItemFrameListener implements Listener {
 
     }
 
-    @EventHandler
-    public void PlayerCommandPreprocessEvent (PlayerCommandPreprocessEvent e){
-
-        if (e.getMessage().equals("/clear") || e.getMessage().equals("/clear @p") || e.getMessage().equals("/clear @s") || e.getMessage().equals("/clear @a") || e.getMessage().equals("/clear " + e.getPlayer().getName())){
-
-            boolean c = false;
-            synchronized (inventoryData){
-                for (InventoryData data : inventoryData){
-
-                    if (data.getUuid().equals(e.getPlayer().getUniqueId())){
-                        data.setPlayerInventory(e.getPlayer().getInventory());
-                        c = true;
-                    }
-
-                }
-
-                if (!c){
-                    inventoryData.add(new InventoryData(e.getPlayer().getUniqueId(), e.getPlayer().getInventory()));
-                }
-            }
-        }
-
-    }
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
@@ -376,36 +350,6 @@ class ItemFrameListener implements Listener {
                     }
 
                 }
-
-                // clearされた直後だったら？
-
-                PlayerInventory playerInventory = null;
-                synchronized (inventoryData){
-                    for (InventoryData data : inventoryData){
-                        if (data.getUuid().equals(player.getUniqueId())){
-                            playerInventory = data.getPlayerInventory();
-                            break;
-                        }
-                    }
-                }
-
-                if (playerInventory != null){
-
-                    for (int i = 0; i < playerInventory.getSize(); i++){
-
-                        ItemStack item = playerInventory.getItem(i);
-
-                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
-
-                            frame.setItem(new ItemStack(Material.AIR));
-                            e.setCancelled(true);
-                            return;
-                        }
-
-                    }
-
-                }
-
             }
 
             // エンダーチェスト対策
