@@ -58,6 +58,14 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                     dataAPI.createTableByDrop();
                 }
 
+                try {
+                    PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable3 LIMIT 1;");
+                    statement.execute();
+                    statement.close();
+                } catch (SQLException e){
+                    dataAPI.createTableByBox();
+                }
+
             } else {
 
                 String pass = "./" + getDataFolder().getPath() + "/FrameData.db";
@@ -79,12 +87,39 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
                 dataAPI = new DataAPI(con, this);
                 if (cre) {
                     dataAPI.createAllTable();
+                } else {
+
+                    try {
+                        PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable1 LIMIT 1;");
+                        statement.execute();
+                        statement.close();
+                    } catch (SQLException e){
+                        dataAPI.createTableByItem();
+                    }
+
+                    try {
+                        PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable2 LIMIT 1;");
+                        statement.execute();
+                        statement.close();
+                    } catch (SQLException e){
+                        dataAPI.createTableByDrop();
+                    }
+
+                    try {
+                        PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable3 LIMIT 1;");
+                        statement.execute();
+                        statement.close();
+                    } catch (SQLException e){
+                        dataAPI.createTableByBox();
+                    }
+
                 }
 
             }
 
             getCommand("ifp").setExecutor(new IFPCommand(dataAPI));
             getCommand("ifp").setTabCompleter(new IFPCommandTab());
+            getCommand("frame-kill").setExecutor(new IFPCommand(dataAPI));
 
             getServer().getPluginManager().registerEvents(new ItemFrameListener(dataAPI), this);
 

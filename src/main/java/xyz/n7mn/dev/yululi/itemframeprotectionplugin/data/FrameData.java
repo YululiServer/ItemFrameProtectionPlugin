@@ -1,6 +1,5 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
-import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Date;

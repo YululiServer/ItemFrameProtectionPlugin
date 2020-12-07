@@ -1,6 +1,7 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin.data;
 
-import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
@@ -13,12 +14,16 @@ public class DataAPI {
     final ItemFrameList item;
     final Plugin plugin;
 
+    final BoxDataList box;
+
     public DataAPI(Connection con, Plugin plugin){
 
         drop = new DropItemList(con, plugin);
         item = new ItemFrameList(con, plugin);
+
         this.plugin = plugin;
 
+        box = new BoxDataList(con, plugin);
     }
 
     public List<FrameData> getListByFrameData(boolean activeOnly){
@@ -46,6 +51,8 @@ public class DataAPI {
 
         item.createTable();
         drop.createTable();
+
+        box.createTable();
 
     }
 
@@ -127,6 +134,9 @@ public class DataAPI {
 
         item.forceCacheToSQL();
         drop.forceCacheToSQL();
+        box.forceCacheToSQL();
+
+        //chest.forceCacheToSQL();
 
     }
 
@@ -135,4 +145,63 @@ public class DataAPI {
     }
 
 
+    public List<BoxData> getBoxDataList(){
+
+        return box.getBoxDataList();
+
+    }
+
+    public BoxData getBoxData(UUID boxUUID) {
+
+        return box.getBoxData(boxUUID);
+    }
+
+
+    public void addBoxData(UUID boxUUID, Inventory inventory){
+
+        box.setBoxData(boxUUID, inventory);
+
+    }
+
+    public void addBoxData(BoxData data){
+
+        box.setBoxData(data);
+
+    }
+
+    public void deleteBoxData(UUID boxUUID){
+
+        box.deleteBoxData(boxUUID);
+
+    }
+
+    public void deleteBoxData(BoxData data){
+
+        box.deleteBoxData(data);
+
+    }
+
+    public void deleteAllTableByBox(){
+
+        box.deleteAll();
+
+    }
+
+    public void cacheClearByBox(){
+
+        box.deleteCache();
+
+    }
+
+    public BoxData getBoxDataBySearch(Location loc){
+
+        return box.getBoxDataBySearch(loc);
+
+    }
+
+    public void createTableByBox(){
+
+        box.createTable();
+
+    }
 }

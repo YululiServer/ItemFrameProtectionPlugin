@@ -3,23 +3,24 @@ package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import org.bukkit.*;
+import org.bukkit.block.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.HopperMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.*;
 import org.bukkit.plugin.Plugin;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DropItemData;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.FrameData;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.ItemFrameProtectDeleteEvent;
+import xyz.acrylicstyle.achievement.gui.ExtraInventoryGui;
+import xyz.acrylicstyle.achievement.gui.ExtraInventoryGuiHolder;
+import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.*;
 
 import java.util.*;
 
@@ -35,6 +36,7 @@ class ItemFrameListener implements Listener {
         this.api = api;
 
     }
+
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public void PlayerInteractEntityEvent (PlayerInteractEntityEvent e){
@@ -108,6 +110,9 @@ class ItemFrameListener implements Listener {
                 if (frame.getItem().getType() == Material.AIR){
 
                     frame.setItem(player.getInventory().getItemInMainHand());
+                    if (plugin.getConfig().getBoolean("userMessage")){
+                        player.sendMessage(ChatColor.DARK_GREEN + "[額縁保護] スニークしながら右クリックで額縁の保護を試してみませんか？");
+                    }
                 }
 
                 e.setCancelled(true);
@@ -263,9 +268,34 @@ class ItemFrameListener implements Listener {
                 }
 
             }
+            // エクストラインベントリ
+            ExtraInventoryGui ex = ExtraInventoryGuiHolder.getOrCreate(player.getUniqueId());
+            Inventory extraInventory = ex.getInventory();
 
-            //System.out.println("いい");
+            for (int i = 0; i < extraInventory.getSize(); i++){
 
+                // System.out.println("i : " + i);
+
+                if (extraInventory.getItem(i) == null){
+                    continue;
+                }
+
+                // System.out.println(extraInventory.getItem(i).getType());
+
+                if (extraInventory.getItem(i).getType() == Material.AIR){
+                    continue;
+                }
+
+                if (extraInventory.getItem(i).getType() == frame.getItem().getType() && ItemStackEqual(extraInventory.getItem(i), frame.getItem())){
+                    frame.setItem(new ItemStack(Material.AIR));
+                    e.setCancelled(true);
+                    return;
+                }
+
+            }
+
+
+            // ドロップ対策
             List<DropItemData> itemList = api.getListByDropItem();
 
             for (DropItemData item : itemList){
@@ -281,6 +311,126 @@ class ItemFrameListener implements Listener {
                         frame.setItem(new ItemStack(Material.AIR));
                         e.setCancelled(true);
                         return;
+
+                    }
+                }
+            }
+
+            // チェスト・シュルカーボックス・かまどなどの対策
+            List<BoxData> boxDataList = api.getBoxDataList();
+            Location location = frame.getLocation();
+
+            for (BoxData boxData : boxDataList){
+
+                if (boxData.getBoxUseUUID() == null || boxData.getBoxDataUUID() == null || boxData.getInventory() == null){
+                    continue;
+                }
+
+                if (!boxData.getBoxUseUUID().equals(player.getUniqueId())){
+                    continue;
+                }
+
+                if (Math.abs(location.getBlockX() - boxData.getInventory().getLocation().getBlockX()) <= 5 && Math.abs(location.getBlockY() - boxData.getInventory().getLocation().getBlockY()) <= 5 && Math.abs(location.getBlockZ() - boxData.getInventory().getLocation().getBlockZ()) <= 5){
+
+
+                    Inventory dataInventory = boxData.getInventory();
+                    int size = dataInventory.getSize();
+
+                    for (int i = 0; i < size; i++){
+
+                        ItemStack item = dataInventory.getItem(i);
+
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
+
+                    }
+
+                }
+            }
+
+            // エンダーチェスト対策
+            Inventory enderChest = player.getEnderChest();
+            int size = enderChest.getSize();
+
+            for (int i = 0; i < size; i++){
+
+                ItemStack item = enderChest.getItem(i);
+
+                if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                    frame.setItem(new ItemStack(Material.AIR));
+                    e.setCancelled(true);
+                    return;
+                }
+
+            }
+
+            // チェストトロッコ・馬とかのEntity対策
+            World world = Bukkit.getServer().getWorld(player.getLocation().getWorld().getUID());
+            List<Entity> entities = world.getEntities();
+            for (Entity entity : entities){
+
+                if (entity instanceof StorageMinecart){
+
+                    StorageMinecart minecart = (StorageMinecart) entity;
+                    Inventory inventory1 = minecart.getInventory();
+                    int size1 = inventory1.getSize();
+
+                    for (int i = 0; i < size1; i++){
+
+                        ItemStack item = inventory1.getItem(i);
+
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
+
+                    }
+                }
+
+                if (entity instanceof ChestedHorse){
+
+                    ChestedHorse chestedHorse = (ChestedHorse) entity;
+                    Inventory inventory1 = chestedHorse.getInventory();
+                    int size1 = inventory1.getSize();
+
+                    for (int i = 0; i < size1; i++){
+
+                        ItemStack item = inventory1.getItem(i);
+
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
+
+                    }
+
+                }
+
+                if (entity instanceof HopperMinecart){
+
+                    HopperMinecart minecart = (HopperMinecart) entity;
+                    Inventory inventory1 = minecart.getInventory();
+                    int size1 = inventory1.getSize();
+
+                    for (int i = 0; i < size1; i++){
+
+                        ItemStack item = inventory1.getItem(i);
+
+                        if (item != null && item.getType() == frame.getItem().getType() && ItemStackEqual(item, frame.getItem())){
+
+                            frame.setItem(new ItemStack(Material.AIR));
+                            e.setCancelled(true);
+                            return;
+                        }
 
                     }
                 }
@@ -358,7 +508,7 @@ class ItemFrameListener implements Listener {
         }
     }
 
-
+/*
     private void ItemFramePlace(Location loc, ItemFrame frame){
 
 
@@ -377,7 +527,7 @@ class ItemFrameListener implements Listener {
 
             }
 
-            System.out.println("Debug1 : " + location.getBlock().getType());
+            //System.out.println("Debug1 : " + location.getBlock().getType());
         }
 
         if (loc.getPitch() == -90){
@@ -391,7 +541,7 @@ class ItemFrameListener implements Listener {
 
             }
 
-            System.out.println("Debug2 : " + location.getBlock().getType());
+            //System.out.println("Debug2 : " + location.getBlock().getType());
         }
 
         if (loc.getYaw() == 0){
@@ -517,12 +667,8 @@ class ItemFrameListener implements Listener {
             api.addItemFrame(new FrameData(spawn.getUniqueId(), frame.getItem(), data.getProtectUser(), new Date(), true));
         }
 
-
-
-
-
     }
-
+*/
     @EventHandler(priority = EventPriority.HIGHEST)
     public void ItemFrameProtectDeleteEvent(ItemFrameProtectDeleteEvent e){
         // キャッシュ削除
@@ -549,6 +695,164 @@ class ItemFrameListener implements Listener {
     }
 
 
+    @EventHandler(priority = EventPriority.VERY_LOWEST)
+    public void InventoryCloseEvent (InventoryCloseEvent e){
+
+        Location location = e.getInventory().getLocation();
+
+        if (location == null){
+            return;
+        }
+
+        // System.out.println(location.getBlock().getType());
+
+        Block block = location.getBlock();
+        //System.out.println("debug 1 : " + block.getType());
+        // チェスト
+        if (block.getState() instanceof Chest){
+            //System.out.println("debug 11");
+            Chest chest = (Chest) block.getState();
+            if (api.getBoxDataBySearch(chest.getLocation()) == null){
+
+                BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), chest.getBlockInventory());
+                api.addBoxData(boxData);
+
+            }
+
+            return;
+        }
+
+        // ラージチェスト？
+        if (block.getState() instanceof DoubleChest){
+
+            DoubleChest chest = (DoubleChest) block.getState();
+            if (api.getBoxDataBySearch(chest.getLocation()) == null){
+
+                BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), chest.getInventory());
+                api.addBoxData(boxData);
+
+            }
+
+            return;
+
+        }
+
+        // シュルカー
+        if (block.getState() instanceof ShulkerBox){
+            //System.out.println("debug 12");
+            ShulkerBox shulkerBox = (ShulkerBox) block.getState();
+            if (api.getBoxDataBySearch(shulkerBox.getLocation()) == null){
+
+                BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), shulkerBox.getInventory());
+                api.addBoxData(boxData);
+
+            }
+
+            return;
+        }
+
+        // かまど
+        if (block.getState() instanceof Furnace){
+
+            Furnace furnace = (Furnace) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), furnace.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // 溶鉱炉
+        if (block.getState() instanceof BlastFurnace){
+
+            BlastFurnace blastFurnace = (BlastFurnace) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), blastFurnace.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // 燻製器
+        if (block.getState() instanceof Smoker){
+
+            Smoker smoker = (Smoker) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), smoker.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // ホッパー
+        if (block.getState() instanceof Hopper){
+
+            Hopper hopper = (Hopper) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), hopper.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // ディスペンサー
+        if (block.getState() instanceof Dispenser){
+
+            Dispenser dispenser = (Dispenser) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), dispenser.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // ホッパーカート
+        if (block.getState() instanceof HopperMinecart){
+
+            HopperMinecart hopperMinecart = (HopperMinecart) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), hopperMinecart.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // ドロッパー
+        if (block.getState() instanceof Dropper){
+
+            Dropper dropper = (Dropper) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), dropper.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // 樽
+        if (block.getState() instanceof Barrel){
+
+            Barrel barrel = (Barrel) block.getState();
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), barrel.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // トラップチェスト
+        if (block.getType() == Material.TRAPPED_CHEST){
+
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), e.getInventory());
+            api.addBoxData(boxData);
+
+            return;
+        }
+
+        // 多分プレーヤー以外。
+        Inventory inventory = e.getInventory();
+        int size = e.getInventory().getSize();
+
+        if (size != 5){
+
+            BoxData boxData = new BoxData(UUID.randomUUID(), e.getPlayer().getUniqueId(), inventory);
+            api.addBoxData(boxData);
+
+        }
+
+    }
+
     private boolean ItemStackEqual(ItemStack item1, ItemStack item2){
 
         if (item1 == null && item2 == null){
@@ -573,6 +877,9 @@ class ItemFrameListener implements Listener {
             }
 
         }
+
+
+
         return false;
     }
 

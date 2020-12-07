@@ -2,7 +2,7 @@ name: ItemFrameProtectionPlugin
 version: @version@
 main: xyz.n7mn.dev.yululi.itemframeprotectionplugin.ItemFrameProtectionPlugin
 api-version: 1.16
-depend: [ LuckPerms ]
+depend: [ LuckPerms , AdvancedAchievement ]
 authors: [ n3m_ ]
 description: ItemFrameProtectionPlugin
 website: https://n7mn.xyz/
@@ -10,3 +10,7 @@ commands:
   ifp:
     description: '説明いる？'
     usage: '/ifp'
+
+  frame-kill:
+    description: 'kill item_frame'
+    usage: '/frame-kill'

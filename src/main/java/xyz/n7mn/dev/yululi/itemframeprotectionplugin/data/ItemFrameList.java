@@ -336,6 +336,7 @@ class ItemFrameList implements DataInteface {
 
                 set.close();
                 statement.close();
+                // System.out.println("debug : " + count);
                 return count;
             }
 

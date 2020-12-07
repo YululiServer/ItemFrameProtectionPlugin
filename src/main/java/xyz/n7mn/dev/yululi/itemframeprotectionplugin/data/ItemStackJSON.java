@@ -11,9 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class ItemStackJSON {
@@ -23,7 +21,7 @@ public class ItemStackJSON {
 
     private String displayName;
     private Multimap<Attribute, AttributeModifier> attributeModifiers;
-    private int customModelData;
+    private Integer customModelData;
     private Set<Namespaced> destroyableKeys;
     private BaseComponent[] displayNameComponent;
     private String localizedName;
@@ -58,11 +56,19 @@ public class ItemStackJSON {
         this.type = stack.getType();
         this.amount = stack.getAmount();
 
-        this.displayName = stack.getItemMeta().getDisplayName();
-        this.attributeModifiers = stack.getItemMeta().getAttributeModifiers();
+
+        if (stack.getItemMeta() != null && stack.getItemMeta().getDisplayName() != null){
+            this.displayName = stack.getItemMeta().getDisplayName();
+        }
+
+        if (stack.getItemMeta() != null && stack.getItemMeta().getAttributeModifiers() != null){
+            this.attributeModifiers = stack.getItemMeta().getAttributeModifiers();
+        }
+
         if (stack.getItemMeta().hasCustomModelData()){
             this.customModelData = stack.getItemMeta().getCustomModelData();
         }
+
         this.destroyableKeys = stack.getItemMeta().getDestroyableKeys();
         if (stack.getItemMeta().getDisplayNameComponent().length != 0){
             this.displayNameComponent = stack.getItemMeta().getDisplayNameComponent();
@@ -116,14 +122,23 @@ public class ItemStackJSON {
         ItemStack itemStack = new ItemStack(type);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setAttributeModifiers(attributeModifiers);
-        itemMeta.setCustomModelData(customModelData);
+        if (attributeModifiers != null){
+            itemMeta.setAttributeModifiers(attributeModifiers);
+        }
+
+        if (customModelData != null){
+
+            itemMeta.setCustomModelData(customModelData);
+
+        }
 
         if (destroyableKeys != null){
             itemMeta.setDestroyableKeys(destroyableKeys);
         }
 
-        itemMeta.setDisplayName(displayName);
+        if (displayName != null){
+            itemMeta.setDisplayName(displayName);
+        }
 
         if (displayNameComponent != null){
             if (displayNameComponent.length != 0){
@@ -131,9 +146,17 @@ public class ItemStackJSON {
             }
         }
 
-        itemMeta.setLocalizedName(localizedName);
-        itemMeta.setLore(lore);
-        itemMeta.setLoreComponents(loreComponents);
+        if (localizedName != null){
+            itemMeta.setLocalizedName(localizedName);
+        }
+
+        if (lore != null){
+            itemMeta.setLore(lore);
+        }
+
+        if (loreComponents != null){
+            itemMeta.setLoreComponents(loreComponents);
+        }
 
         if (placeableKeys != null){
             itemMeta.setPlaceableKeys(placeableKeys);
