@@ -38,14 +38,14 @@ class AutoRemoveTimer extends BukkitRunnable {
 
                     Entity entity = Bukkit.getEntity(frameData.getItemFrameUUID());
                     if (entity == null){
-                        api.deleteTableByFrame(frameData.getItemFrameUUID());
+                        //api.deleteTableByFrame(frameData.getItemFrameUUID());
 
                         Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID())));
                         continue;
                     }
 
                     if (entity.getType() != EntityType.ITEM_FRAME){
-                        api.deleteTableByFrame(frameData.getItemFrameUUID());
+                        //api.deleteTableByFrame(frameData.getItemFrameUUID());
                         Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getServer().getPluginManager().callEvent(new ItemFrameProtectDeleteEvent(frameData.getItemFrameUUID())));
                     }
 
@@ -55,13 +55,13 @@ class AutoRemoveTimer extends BukkitRunnable {
 
                     Entity entity = Bukkit.getEntity(dropItem.getDropItemUUID());
                     if (entity == null){
-                        api.deleteTableByItem(dropItem.getDropItemUUID());
+                        //api.deleteTableByItem(dropItem.getDropItemUUID());
                         continue;
                     }
 
 
                     if (entity.getType() != EntityType.DROPPED_ITEM){
-                        api.deleteTableByItem(dropItem.getDropItemUUID());
+                        //api.deleteTableByItem(dropItem.getDropItemUUID());
                     }
 
                 }
