@@ -4,11 +4,8 @@
 # 自分で作っといてプラグイン名なげえ・・・
 #
 
-errorPrint: true # 「false」にするとプラグイン自体にエラーが出ても見てみぬする (下記のMySQLの設定がおかしいとかバグったとか)
-
-
-useMySQL: false # MySQL使うなら「true」。falseだったら何もおきない。意味がない。
 MySQLServer: '' # サーバー名
+MySQLPort: 3306 # ポート番号
 MySQLUsername: '' # ユーザー名
 MySQLPassword: '' # パスワード
 MySQLDatabase: '' # データベース名
