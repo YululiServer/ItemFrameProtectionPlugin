@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public final class ItemFrameProtectionPlugin extends JavaPlugin {
@@ -38,6 +39,18 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
             con = connection;
             con.setAutoCommit(true);
+
+
+            try {
+                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                statement.execute();
+                statement.close();
+            } catch (SQLException e){
+                PreparedStatement statement = con.prepareStatement("CREATE TABLE IFPDataList(ItemFrameUUID VARCHAR(36) NOT NULL, UserUUID VARCHAR(36) NOT NULL , PRIMARY KEY (`ItemFrameUUID`)) ");
+                statement.execute();
+                statement.close();
+            }
+
         } catch (Exception e){
             e.printStackTrace();
             Bukkit.getServer().getPluginManager().disablePlugin(this);
