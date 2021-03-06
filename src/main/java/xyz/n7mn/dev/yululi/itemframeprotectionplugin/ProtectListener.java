@@ -7,6 +7,9 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.plugin.Plugin;
 
@@ -144,9 +147,186 @@ class ProtectListener implements Listener {
                     ex.printStackTrace();
                     Bukkit.getServer().getPluginManager().disablePlugin(plugin);
                 }
+
+                return;
+            }
+
+            for (IFPData data : dataList) {
+                if (frame.getUniqueId().equals(data.getItemFrameUUID())) {
+                    e.setCancelled(true);
+                    return;
+                }
             }
         }).start();
 
+    }
+
+    @EventHandler
+    public void HangingBreakEvent (HangingBreakEvent e){
+
+        if (!(e.getEntity() instanceof ItemFrame)){
+            return;
+        }
+
+        new Thread(()->{
+            List<IFPData> dataList = new ArrayList<>();
+            try {
+
+                try {
+                    PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                    statement.execute();
+                    statement.close();
+                } catch (Exception ex){
+                    try {
+                        // DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+                        Connection connection = DriverManager.getConnection("" +
+                                        "jdbc:mysql://" + MySQLServer + ":" + MySQLPort + "/" + MySQLDatabase + MySQLOption,
+                                MySQLUsername,
+                                MySQLPassword
+                        );
+
+                        con = connection;
+                        con.setAutoCommit(true);
+                    } catch (SQLException ex1){
+
+                        ex1.printStackTrace();
+                        Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+                    }
+                }
+
+                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                ResultSet set = statement.executeQuery();
+                while (set.next()){
+                    dataList.add(new IFPData(UUID.fromString(set.getString("ItemFrameUUID")),UUID.fromString("UserUUID")));
+                }
+                set.close();
+                statement.close();
+
+            } catch (Exception ex){
+                ex.printStackTrace();
+                Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            }
+
+            for (IFPData data : dataList){
+                ItemFrame frame = (ItemFrame) e.getEntity();
+                if (data.getItemFrameUUID().equals(frame.getUniqueId())){
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }).start();
+    }
+
+    @EventHandler
+    public void EntityDamageEvent (EntityDamageEvent e) {
+
+        if (!(e.getEntity() instanceof ItemFrame)) {
+            return;
+        }
+
+        new Thread(()->{
+            List<IFPData> dataList = new ArrayList<>();
+            try {
+
+                try {
+                    PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                    statement.execute();
+                    statement.close();
+                } catch (Exception ex){
+                    try {
+                        // DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+                        Connection connection = DriverManager.getConnection("" +
+                                        "jdbc:mysql://" + MySQLServer + ":" + MySQLPort + "/" + MySQLDatabase + MySQLOption,
+                                MySQLUsername,
+                                MySQLPassword
+                        );
+
+                        con = connection;
+                        con.setAutoCommit(true);
+                    } catch (SQLException ex1){
+
+                        ex1.printStackTrace();
+                        Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+                    }
+                }
+
+                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                ResultSet set = statement.executeQuery();
+                while (set.next()){
+                    dataList.add(new IFPData(UUID.fromString(set.getString("ItemFrameUUID")),UUID.fromString("UserUUID")));
+                }
+                set.close();
+                statement.close();
+
+            } catch (Exception ex){
+                ex.printStackTrace();
+                Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            }
+
+            for (IFPData data : dataList){
+                ItemFrame frame = (ItemFrame) e.getEntity();
+                if (data.getItemFrameUUID().equals(frame.getUniqueId())){
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }).start();
+    }
+
+    @EventHandler
+    public void EntityDamageByEntityEvent (EntityDamageByEntityEvent e) {
+
+        if (!(e.getEntity() instanceof ItemFrame)) {
+            return;
+        }
+
+        new Thread(()->{
+            List<IFPData> dataList = new ArrayList<>();
+            try {
+
+                try {
+                    PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                    statement.execute();
+                    statement.close();
+                } catch (Exception ex){
+                    try {
+                        // DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+                        Connection connection = DriverManager.getConnection("" +
+                                        "jdbc:mysql://" + MySQLServer + ":" + MySQLPort + "/" + MySQLDatabase + MySQLOption,
+                                MySQLUsername,
+                                MySQLPassword
+                        );
+
+                        con = connection;
+                        con.setAutoCommit(true);
+                    } catch (SQLException ex1){
+
+                        ex1.printStackTrace();
+                        Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+                    }
+                }
+
+                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                ResultSet set = statement.executeQuery();
+                while (set.next()){
+                    dataList.add(new IFPData(UUID.fromString(set.getString("ItemFrameUUID")),UUID.fromString("UserUUID")));
+                }
+                set.close();
+                statement.close();
+
+            } catch (Exception ex){
+                ex.printStackTrace();
+                Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            }
+
+            for (IFPData data : dataList){
+                ItemFrame frame = (ItemFrame) e.getEntity();
+                if (data.getItemFrameUUID().equals(frame.getUniqueId())){
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }).start();
     }
 
 }
