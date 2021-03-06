@@ -4,13 +4,8 @@
 # 自分で作っといてプラグイン名なげえ・・・
 #
 
-userMessage: false # 「true」にすると額縁を設置したときに設置した人にお知らせしてくれる
-errorPrint: true # 「false」にするとプラグイン自体にエラーが出ても見てみぬする (下記のMySQLの設定がおかしいとかバグったとか)
-
-frameAutoProtection: false # 「true」にすると自動保護
-
-useMySQL: false # MySQL使うなら「true」。falseだったら何もおきない。意味がない。
 MySQLServer: '' # サーバー名
+MySQLPort: 3306 # ポート番号
 MySQLUsername: '' # ユーザー名
 MySQLPassword: '' # パスワード
 MySQLDatabase: '' # データベース名

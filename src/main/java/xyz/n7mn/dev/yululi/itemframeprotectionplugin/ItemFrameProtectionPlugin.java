@@ -1,27 +1,16 @@
 package xyz.n7mn.dev.yululi.itemframeprotectionplugin;
 
-import org.bukkit.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DataAPI;
-import xyz.n7mn.dev.yululi.itemframeprotectionplugin.data.DebugTimer;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
-
-
-    private Connection con = null;
-    private DataAPI dataAPI = null;
-
-    public DataAPI getDataAPI() {
-        return dataAPI;
-    }
-
-    void setConnect(Connection con ){
-        this.con = con;
-    }
+    private Connection con;
 
     @Override
     public void onEnable() {
@@ -29,6 +18,10 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
         saveDefaultConfig();
 
         String MySQLServer = getConfig().getString("MySQLServer");
+        int MySQLPort = 3306;
+        if (getConfig().getInt("MySQLPort") != 3306 && getConfig().getInt("MySQLPort") <= 65535){
+            MySQLPort = getConfig().getInt("MySQLPort");
+        }
         String MySQLUsername = getConfig().getString("MySQLUsername");
         String MySQLPassword = getConfig().getString("MySQLPassword");
         String MySQLDatabase = getConfig().getString("MySQLDatabase");
@@ -36,134 +29,58 @@ public final class ItemFrameProtectionPlugin extends JavaPlugin {
 
         try {
 
-            if (getConfig().getBoolean("useMySQL")) {
+            DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
 
-                con = DriverManager.getConnection("jdbc:mysql://" + MySQLServer + "/" + MySQLDatabase + MySQLOption, MySQLUsername, MySQLPassword);
-                con.setAutoCommit(true);
-                dataAPI = new DataAPI(con, this);
+            Connection connection = DriverManager.getConnection("" +
+                            "jdbc:mysql://" + MySQLServer + ":" + MySQLPort + "/" + MySQLDatabase + MySQLOption,
+                    MySQLUsername,
+                    MySQLPassword
+            );
 
-                try {
-                    PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable1 LIMIT 1;");
-                    statement.execute();
-                    statement.close();
-                } catch (SQLException e){
-                    dataAPI.createTableByItem();
-                }
+            con = connection;
+            con.setAutoCommit(true);
 
-                try {
-                    PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable2 LIMIT 1;");
-                    statement.execute();
-                    statement.close();
-                } catch (SQLException e){
-                    dataAPI.createTableByDrop();
-                }
 
-                try {
-                    PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable3 LIMIT 1;");
-                    statement.execute();
-                    statement.close();
-                } catch (SQLException e){
-                    dataAPI.createTableByBox();
-                }
-
-            } else {
-
-                String pass = "./" + getDataFolder().getPath() + "/FrameData.db";
-                if (System.getProperty("os.name").toLowerCase().startsWith("windows")){
-                    pass = pass.replaceAll("/", "\\\\");
-                }
-
-                boolean cre = false;
-                if (!new File(pass).exists()){
-                    try {
-                        cre = new File(pass).createNewFile();
-                    } catch (IOException e) {
-                        // e.printStackTrace();
-                    }
-                }
-                con = DriverManager.getConnection("jdbc:sqlite:"+pass);
-                con.setAutoCommit(true);
-
-                dataAPI = new DataAPI(con, this);
-                if (cre) {
-                    dataAPI.createAllTable();
-                } else {
-
-                    try {
-                        PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable1 LIMIT 1;");
-                        statement.execute();
-                        statement.close();
-                    } catch (SQLException e){
-                        dataAPI.createTableByItem();
-                    }
-
-                    try {
-                        PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable2 LIMIT 1;");
-                        statement.execute();
-                        statement.close();
-                    } catch (SQLException e){
-                        dataAPI.createTableByDrop();
-                    }
-
-                    try {
-                        PreparedStatement statement = con.prepareStatement("SELECT 1 FROM ItemFrameTable3 LIMIT 1;");
-                        statement.execute();
-                        statement.close();
-                    } catch (SQLException e){
-                        dataAPI.createTableByBox();
-                    }
-
-                }
-
+            try {
+                PreparedStatement statement = con.prepareStatement("SELECT * FROM IFPDataList");
+                statement.execute();
+                statement.close();
+            } catch (SQLException e){
+                PreparedStatement statement = con.prepareStatement("CREATE TABLE IFPDataList(ItemFrameUUID VARCHAR(36) NOT NULL, UserUUID VARCHAR(36) NOT NULL , PRIMARY KEY (`ItemFrameUUID`)) ");
+                statement.execute();
+                statement.close();
             }
-
-            getCommand("ifp").setExecutor(new IFPCommand(dataAPI));
-            getCommand("ifp").setTabCompleter(new IFPCommandTab());
-            getCommand("frame-kill").setExecutor(new IFPCommand(dataAPI));
-
-            getServer().getPluginManager().registerEvents(new ItemFrameListener(dataAPI), this);
-
-            new AutoRemoveTimer(dataAPI, this).runTaskLaterAsynchronously(this, 20L);
-            new AutoSQLConnectCheckTimer(this, con).runTaskLaterAsynchronously(this, 20L);
-
-            if (this.getDescription().getVersion().endsWith("-dev")){
-                new DebugTimer(dataAPI, this).runTaskLaterAsynchronously(this, 0L);
-            }
-
-            getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
 
         } catch (Exception e){
-            if (getConfig().getBoolean("errorPrint")){
-                getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                e.printStackTrace();
-            }
-            onDisable();
+            e.printStackTrace();
+            Bukkit.getServer().getPluginManager().disablePlugin(this);
         }
+
+        getServer().getPluginManager().registerEvents(new ProtectListener(con, this), this);
+
+        getLogger().info("Started ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
 
-        new Thread(()->{
+        if (con != null){
 
             try {
-                if (con != null){
-
-                    dataAPI.cacheToSQL();
-                    con.close();
-
-                }
+                new Thread(() -> {
+                    try {
+                        con.close();
+                    } catch (SQLException throwable) {
+                        //throwable.printStackTrace();
+                    }
+                });
             } catch (Exception e){
-
-                if (getConfig().getBoolean("errorPrint")){
-                    getLogger().info(ChatColor.RED + "エラーを検知しました。");
-                    e.printStackTrace();
-                }
-
+                // e.printStackTrace();
             }
 
-        }).start();
+        }
+
 
         getLogger().info("Disabled ItemFrameProtectionPlugin Ver "+getDescription().getVersion()+"!!");
     }

@@ -3,34 +3,30 @@ import org.apache.tools.ant.filters.ReplaceTokens
 apply plugin: 'java'
 
 group = 'xyz.n7mn.dev.yululi'
-version = '3.0.8b'
-tasks.withType(AbstractCompile)*.options*.encoding = tasks.withType(GroovyCompile)*.groovyOptions*.encoding = 'UTF-8'
+version = '4.0'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
+tasks.withType(AbstractCompile)*.options*.encoding = tasks.withType(GroovyCompile)*.groovyOptions*.encoding = 'UTF-8'
 
 
 repositories {
     mavenCentral()
     maven {
-        name = 'papermc-repo'
-        url = 'https://papermc.io/repo/repository/maven-public/'
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
     }
     maven {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
-    maven {
-        name = 'repo.acrylicstyle.xyz'
-        url = 'https://repo.acrylicstyle.xyz/'
-    }
 }
 
 dependencies {
-    compileOnly 'xyz.acrylicstyle.grid:grid-api:1.16.3-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.0'
-    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.32.3.2'
+    compile 'mysql:mysql-connector-java:8.0.23'
     compileOnly files(fileTree(dir: 'lib', includes: ['*.jar']))
 }
 
